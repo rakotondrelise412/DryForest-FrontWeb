@@ -1,0 +1,56 @@
+/.angular
+/.vscode
+/node_modules
+/public
+/src
+    /app
+        /components
+        /core
+            /guards
+                auth.guard.ts
+            /interceptors
+                auth.interceptor.ts
+            /services
+        /models
+            gender.model.ts
+            person.model.ts
+            role.model.ts
+            site.model.ts
+            user.model.ts
+        /pages
+            /dashboard
+                dashboard.css
+                dashboard.html
+                dashboard.ts
+            /login
+                login.css
+                login.html
+                login.ts
+            /person
+                /person-list
+                    person-list.css
+                    person-list.html
+                    person-list.ts
+        /services
+            auth.service.ts
+            person.service.ts
+        app.component.ts
+        app.config.ts
+        app.css
+        app.html
+        app.routes.ts
+    /environments
+        environment.ts
+    index.html
+    main.ts
+    styles.css
+.editorconfig
+.gitattributes
+.gitignore
+angular.json
+package-lock.json
+package.json
+REDAME.md
+tsconfig.app.json
+tsconfig.json
+tsconfig.spec.json

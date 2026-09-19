@@ -1,0 +1,129 @@
+<div class="obs-root">
+
+  <!-- ══════════════════════════════════════════
+       HEADER
+  ══════════════════════════════════════════════ -->
+  <header class="obs-header">
+    <div class="obs-header__left">
+      <div class="obs-header__icon">
+        <span class="material-icons">visibility</span>
+      </div>
+      <div>
+        <h1 class="obs-header__title">Observations de Patrouille</h1>
+        <p class="obs-header__sub">Liste des observations enregistrées sur le terrain</p>
+      </div>
+    </div>
+
+    <div class="obs-header__actions">
+      <button class="btn-refresh" (click)="loadObservationPatrol()">
+        <span class="material-icons">refresh</span>
+        Rafraîchir
+      </button>
+
+      <div class="count-badge" *ngIf="(observationPatrol$ | async) as list">
+        <span class="material-icons">bar_chart</span>
+        <span class="count-number">{{ list.length }}</span>
+        <span class="count-text">observation(s)</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ══════════════════════════════════════════
+       ÉTATS
+  ══════════════════════════════════════════════ -->
+  <div *ngIf="isLoading" class="state-box state-loading">
+    <div class="spinner"></div>
+    <p>Chargement des observations...</p>
+  </div>
+
+  <div *ngIf="!isLoading && errorMessage" class="state-box state-error">
+    <span class="material-icons">error_outline</span>
+    <p>{{ errorMessage }}</p>
+    <button class="btn-retry" (click)="loadObservationPatrol()">
+      <span class="material-icons">refresh</span>
+      Réessayer
+    </button>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       LISTE
+  ══════════════════════════════════════════════ -->
+  <ng-container *ngIf="!isLoading && !errorMessage">
+    <ng-container *ngIf="(observationPatrol$ | async) as observations">
+
+      <!-- Vide -->
+      <div *ngIf="!observations || observations.length === 0" class="state-box state-empty">
+        <span class="material-icons">search_off</span>
+        <p>Aucune observation trouvée.</p>
+      </div>
+
+      <!-- Grille de cartes -->
+      <div *ngIf="observations && observations.length > 0" class="obs-grid">
+        <div class="obs-card"
+             *ngFor="let obs of observations; trackBy: trackById">
+
+          <!-- ── En-tête de carte ── -->
+          <div class="obs-card__header">
+            <div class="obs-card__icon-wrap">
+              <span class="material-icons">visibility</span>
+            </div>
+            <div class="obs-card__meta">
+              <div class="obs-card__id">#{{ obs.id_observation_patrol }}</div>
+              <div class="obs-card__badges">
+                <span class="badge badge--zone" *ngIf="obs.zone">
+                  <span class="material-icons">place</span>
+                  {{ obs.zone }}
+                </span>
+                <span class="badge badge--group" *ngIf="obs.patrolGroup">
+                  <span class="material-icons">groups</span>
+                  {{ obs.patrolGroup }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- ── Corps de carte ── -->
+          <div class="obs-card__body">
+
+            <!-- Description -->
+            <p class="obs-card__description" *ngIf="obs.description">
+              {{ obs.description }}
+            </p>
+            <p class="obs-card__description obs-card__description--empty" *ngIf="!obs.description">
+              Aucune description disponible.
+            </p>
+
+            <!-- Infos -->
+            <div class="obs-card__infos">
+              <div class="obs-info" *ngIf="obs.date_observation">
+                <span class="material-icons obs-info__icon">calendar_today</span>
+                <span class="obs-info__label">Date :</span>
+                <span class="obs-info__value">{{ obs.date_observation | date:'dd/MM/yyyy HH:mm' }}</span>
+              </div>
+
+              <div class="obs-info" *ngIf="obs.user">
+                <span class="material-icons obs-info__icon">person</span>
+                <span class="obs-info__label">Agent :</span>
+                <span class="obs-info__value">{{ obs.user }}</span>
+              </div>
+
+              <div class="obs-info"
+                   *ngIf="obs.location?.coordinates && obs.location!.coordinates!.length === 2">
+                <span class="material-icons obs-info__icon">my_location</span>
+                <span class="obs-info__label">Coords :</span>
+                <span class="obs-info__value obs-info__value--mono">
+                  {{ obs.location!.coordinates![1] | number:'1.4-4' }},
+                  {{ obs.location!.coordinates![0] | number:'1.4-4' }}
+                </span>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+      </div>
+
+    </ng-container>
+  </ng-container>
+
+</div>

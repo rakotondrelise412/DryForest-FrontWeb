@@ -1,0 +1,320 @@
+/* ── Container principal ─────────────────────────────── */
+.plantation-list-container {
+  padding: 30px;
+  max-width: 1200px;
+  margin: 0 auto;
+  font-family: 'Roboto', sans-serif;   /* ← Roboto comme le dashboard */
+  color: var(--text-900);                       /* ← --text-900 */
+}
+
+/* ── Barre d'en-tête ─────────────────────────────────── */
+.plantation-header-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  background: white;
+  padding: 24px 30px;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  margin-bottom: 24px;
+}
+
+.title-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.title-icon {
+  font-size: 32px;
+  color: #955138;
+  padding: 10px;
+  border-radius: 8px;
+}
+
+.plantation-header-bar h1 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-900);        /* --text-900 */
+  border: none;
+  padding: 0;
+}
+
+.actions-group {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+/* ── Bouton Rafraîchir ───────────────────────────────── */
+.refresh-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #C36922;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+  transition: background 0.2s, transform 0.1s;
+}
+.refresh-btn:hover {
+  background: #955138;
+  transform: translateY(-1px);
+}
+.refresh-btn .material-icons { font-size: 18px; }
+
+/* ── Badge compteur ──────────────────────────────────── */
+.count-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #f7fafc;
+  border: 1px solid #955138;
+  padding: 8px 14px;
+  border-radius: 8px;
+}
+.count-icon { font-size: 18px; color: #955138; }
+.count-number {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-900);        /* --text-900 */
+}
+.count-text {
+  font-size: 13px;
+  color: var(--text-900);        /* --text-400 */
+}
+
+/* ── Barre de filtres ────────────────────────────────── */
+.filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  background: white;
+  padding: 18px 24px;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  margin-bottom: 24px;
+}
+
+.filter-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #f7fafc;
+  border: 1px solid #955138;
+  border-radius: 8px;
+  padding: 8px 12px;
+  flex: 1;
+  min-width: 160px;
+}
+
+.filter-group .material-icons {
+  font-size: 18px;
+  color: var(--text-900);
+  flex-shrink: 0;
+}
+
+.filter-group select,
+.filter-group input[type="date"] {
+  border: none;
+  background: transparent;
+  font-family: 'Roboto', sans-serif;   /* ← Roboto */
+  font-size: 14px;
+  color: var(--text-900);        /* --text-900 */
+  width: 100%;
+  outline: none;
+  cursor: pointer;
+}
+
+/* ── Bouton Chercher ─────────────────────────────────── */
+.search-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #C36922;
+  color: white;
+  border: none;
+  padding: 10px 22px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+  transition: background 0.2s, transform 0.1s;
+  white-space: nowrap;
+}
+.search-btn:hover {
+  background: #955138;
+  transform: translateY(-1px);
+}
+.search-btn .material-icons { font-size: 18px; }
+
+.refresh-btn,
+.search-btn {
+  font-family: 'Roboto', sans-serif;   /* ← Roboto */
+  font-weight: 600;
+  font-size: 14px;
+}
+
+/* ── États (loading / error / no-data) ───────────────── */
+.loading, .error, .no-data {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  border-radius: 12px;
+  margin: 12px 0;
+  text-align: center;
+  gap: 12px;
+}
+
+.state-icon { font-size: 48px; }
+
+.loading {
+  background: #f7fafc;
+  color: #4a5568;
+}
+.loading-icon { color: #38a169; }
+
+.error {
+  background: #fff5f5;
+  color: #742a2a;
+  border-left: 4px solid #fc8181;
+}
+.error-icon { color: #e53e3e; }
+
+.no-data {
+  background: #f7fafc;
+  color: #718096;
+  border: 2px dashed #e2e8f0;
+}
+.nodata-icon { color: #cbd5e0; }
+
+/* ── Grille des cartes ───────────────────────────────── */
+.plantations-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(370px, 1fr));
+  gap: 20px;
+}
+
+/* ── Carte plantation ────────────────────────────────── */
+.plantation-card {
+  background: white;
+  border: 1px solid #955138;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.plantation-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.09);
+}
+
+/* ── En-tête de carte ────────────────────────────────── */
+.plantation-header {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  margin-bottom: 14px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.thumb {
+  width: 80px;
+  height: 64px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #f7fafc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #e2e8f0;
+  flex-shrink: 0;
+}
+.thumb img { width: 100%; height: 100%; object-fit: cover; }
+.no-thumb-icon { font-size: 28px; color: #cbd5e0; }
+
+.meta { flex: 1; min-width: 0; }
+
+.plant-name {
+  margin: 0 0 8px 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-900);        /* --text-900 */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.badges {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.badge {
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+/* Badges alignés sur la palette dashboard */
+.badge.status  { background: #c6f6d5; color: #276749; }
+.badge.deleted { background: #e2e8f0; color: #718096; }
+.badge.block   { background: #feebc8; color: #7b341e; }
+.badge.subplot { background: #e9d8fd; color: #553c9a; }
+
+/* ── Corps de carte ──────────────────────────────────── */
+.plantation-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.info-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.info {
+  display: flex;
+  gap: 5px;
+  align-items: baseline;
+  min-width: 140px;
+  flex: 1;
+}
+
+.label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #718096;
+  white-space: nowrap;
+}
+
+.value {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-900);
+}
+
+/* ── Responsive ──────────────────────────────────────── */
+@media (max-width: 768px) {
+  .plantation-list-container { padding: 16px; }
+  .plantation-header-bar { padding: 18px; }
+  .filter-bar { padding: 14px; }
+  .plantations-grid { grid-template-columns: 1fr; }
+  .filter-group { min-width: 100%; }
+}

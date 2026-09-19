@@ -1,0 +1,119 @@
+/* header.component.css — modifications pour logo image + subtitle sous le logo
+   Conserve la palette : #955138 / #C36922 / #F9AC5E
+*/
+
+.dashboard-header {
+  background: linear-gradient(135deg, #955138 0%, #C36922 100%);
+  color: white;
+  padding: 6px 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  height: 80px; /* conserver hauteur existante */
+}
+
+/* left block */
+.header-left { display:flex; align-items:center; gap:14px; }
+
+/* sidebar toggle */
+.sidebar-toggle {
+  background: rgba(255,255,255,0.16);
+  border: none;
+  color: white;
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  cursor: pointer;
+  display:flex; align-items:center; justify-content:center;
+  transition: all .18s ease;
+}
+.sidebar-toggle:hover { background: rgba(255,255,255,0.22); transform: translateY(-2px); }
+.menu-icon { font-size: 22px; }
+
+/* title block: image logo on left, subtitle below (visually) */
+.title-block {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: flex-start;
+}
+
+/* clickable logo image */
+.logo-link { display:inline-block; line-height:0; }
+.site-logo {
+  height: 36px;         /* adapte la taille si nécessaire */
+  width: auto;
+  display: block;
+  object-fit: contain;
+  border-radius: 4px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+}
+
+/* keep a hidden H1 for accessibility */
+.sr-only {
+  position: absolute !important;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+}
+
+/* subtitle under the logo */
+.subtitle {
+  margin: 0;
+  font-size: 13px;
+  color: rgba(255,255,255,0.95);
+  opacity: 0.95;
+}
+
+/* header-right (user block + logout icon) */
+.header-right { display:flex; align-items:center; gap:14px; }
+
+/* user-info: keep same look */
+.user-info {
+  display:flex; align-items:center; gap:12px;
+  background: rgba(255,255,255,0.08);
+  padding: 8px 12px;
+  border-radius: 40px;
+  backdrop-filter: blur(6px);
+}
+
+.user-avatar {
+  width:40px; height:40px; border-radius:50%;
+  background: #fff; color:#C36922;
+  display:flex; align-items:center; justify-content:center;
+  font-weight:700; font-size:16px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+}
+
+.user-details { display:flex; flex-direction:column; line-height:1; color:#F9AC5E; }
+.user-name { color:#fff; font-weight:600; font-size:0.95rem; }
+.user-role, .user-email { font-size:0.78rem; opacity:0.95; color:#F9AC5E; }
+
+/* logout icon button */
+.logout-btn {
+  background: rgba(255,255,255,0.06);
+  border: none;
+  color: #fff;
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer;
+  transition: background .12s ease, transform .12s ease;
+}
+.logout-btn:hover { background: rgba(255,255,255,0.12); transform: translateY(-2px); }
+
+/* responsive adjustments */
+@media (max-width: 768px) {
+  .site-logo { height: 28px; }
+  .dashboard-header { height: auto; padding: 10px 12px; flex-direction: column; gap:8px; align-items:flex-start; }
+  .title-block { flex-direction: row; align-items:center; gap:10px; }
+  .subtitle { display:none; } /* cacher subtitle sur petite largeur si tu veux */
+  .user-details { display:none; } /* conserve seulement avatar et icônes */
+}

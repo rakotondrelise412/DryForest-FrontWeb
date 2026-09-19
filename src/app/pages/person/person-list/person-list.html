@@ -1,0 +1,97 @@
+@let persons = persons$ | async;
+
+<div class="person-list-container">
+  <h1>👥 Liste des Personnes - Dry Forest</h1>
+
+  <button (click)="loadPersons()" class="refresh-btn">
+    🔄 Rafraîchir la liste
+  </button>
+
+  @if (isLoading) {
+    <div class="loading">
+      <p>⏳ Chargement des données...</p>
+    </div>
+  }
+
+  @else if (errorMessage) {
+    <div class="error">
+      <p>❌ {{ errorMessage }}</p>
+    </div>
+  }
+
+  @else if (!persons || persons.length === 0) {
+    <div class="no-data">
+      <p>📭 Aucune personne trouvée.</p>
+    </div>
+  }
+
+  @else {
+    <div class="persons-grid">
+      <div class="stats">
+        <p>📊 {{ persons.length }} personne(s) trouvée(s)</p>
+      </div>
+
+      @for (person of persons; track person.id_person) {
+        <div class="person-card">
+          <div class="person-header">
+            <span class="person-id">#{{ person.id_person }}</span>
+
+            <span class="person-badge" [ngClass]="person.role?.name?.toLowerCase()">
+              {{ person.role?.name || 'Non défini' }}
+            </span>
+
+            @if (person.is_deleted) {
+              <span class="inactive-badge">Inactif</span>
+            }
+          </div>
+
+          <h3 class="person-name">
+            {{ getFullName(person) }}
+          </h3>
+
+          <div class="person-details">
+            <div class="detail">
+              <span class="label">Genre:</span>
+              <span>{{ person.gender?.name || 'Non défini' }}</span>
+            </div>
+
+            @if (person.email) {
+              <div class="detail">
+                <span class="label">Email:</span>
+                <a [href]="'mailto:' + person.email">
+                  {{ person.email }}
+                </a>
+              </div>
+            }
+
+            @if (person.phone_number) {
+              <div class="detail">
+                <span class="label">Téléphone:</span>
+                <span>{{ person.phone_number }}</span>
+              </div>
+            }
+
+            <div class="detail">
+              <span class="label">Adresse:</span>
+              <span>{{ person.address }}</span>
+            </div>
+
+            @if (person.site) {
+              <div class="detail">
+                <span class="label">Site:</span>
+                <span class="site-info">
+                  {{ person.site.name }}
+                </span>
+              </div>
+            }
+
+            <div class="detail">
+              <span class="label">Créé le:</span>
+              <span>{{ formatDate(person.created_at) }}</span>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

@@ -1,0 +1,152 @@
+<div class="inc-root">
+
+  <!-- ═══════════════ HEADER ═══════════════ -->
+  <header class="inc-header">
+    <div class="inc-header__left">
+      <div class="inc-header__icon">
+        <span class="material-icons">warning_amber</span>
+      </div>
+      <div>
+        <h1 class="inc-header__title">Incidents de Patrouille</h1>
+        <p class="inc-header__sub">Liste des incidents signalés sur le terrain</p>
+      </div>
+    </div>
+
+    <div class="inc-header__actions">
+      <button class="btn-refresh" (click)="loadIncidentPatrol()">
+        <span class="material-icons">refresh</span>
+        Rafraîchir
+      </button>
+
+      <div class="count-badge" *ngIf="(incidentPatrol$ | async) as list">
+        <span class="material-icons">bar_chart</span>
+        <span class="count-number">{{ list.length }}</span>
+        <span class="count-text">incident(s)</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ═══════════════ ÉTATS ═══════════════ -->
+  <div *ngIf="isLoading" class="state-box state-loading">
+    <div class="spinner"></div>
+    <p>Chargement des incidents...</p>
+  </div>
+
+  <div *ngIf="!isLoading && errorMessage" class="state-box state-error">
+    <span class="material-icons">error_outline</span>
+    <p>{{ errorMessage }}</p>
+    <button class="btn-retry" (click)="loadIncidentPatrol()">
+      <span class="material-icons">refresh</span>
+      Réessayer
+    </button>
+  </div>
+
+  <!-- ═══════════════ LISTE ═══════════════ -->
+  <ng-container *ngIf="!isLoading && !errorMessage">
+    <ng-container *ngIf="(incidentPatrol$ | async) as incidents">
+
+      <!-- Vide -->
+      <div *ngIf="!incidents || incidents.length === 0" class="state-box state-empty">
+        <span class="material-icons">search_off</span>
+        <p>Aucun incident trouvé.</p>
+      </div>
+
+      <!-- Grille de cartes -->
+      <div *ngIf="incidents && incidents.length > 0" class="inc-grid">
+        <div class="inc-card"
+             [class.inc-card--high]="inc.severity === 'HIGH' || inc.severity === 'CRITICAL'"
+             [class.inc-card--low]="inc.severity === 'LOW'"
+             *ngFor="let inc of incidents; trackBy: trackById">
+
+          <!-- ── En-tête de carte ── -->
+          <div class="inc-card__header">
+
+            <!-- Image ou placeholder -->
+            <div class="inc-card__thumb">
+              <img *ngIf="inc.image; else noThumb"
+                   [src]="inc.image"
+                   alt="Photo incident" />
+              <ng-template #noThumb>
+                <span class="material-icons">image_not_supported</span>
+              </ng-template>
+            </div>
+
+            <div class="inc-card__meta">
+              <div class="inc-card__id">#{{ inc.id_incident_patrol }}</div>
+              <div class="inc-card__badges">
+
+                <span class="badge" [ngClass]="getSeverityClass(inc.severity)">
+                  <span class="material-icons">{{ getSeverityIcon(inc.severity) }}</span>
+                  {{ inc.severity || 'N/A' }}
+                </span>
+
+                <span class="badge badge--zone" *ngIf="inc.zone">
+                  <span class="material-icons">place</span>
+                  {{ inc.zone }}
+                </span>
+
+              </div>
+            </div>
+          </div>
+
+          <!-- ── Corps de carte ── -->
+          <div class="inc-card__body">
+
+            <!-- Description -->
+            <p class="inc-card__description" *ngIf="inc.description">
+              {{ inc.description }}
+            </p>
+            <p class="inc-card__description inc-card__description--empty"
+               *ngIf="!inc.description">
+              Aucune description disponible.
+            </p>
+
+            <!-- Infos -->
+            <div class="inc-card__infos">
+
+              <div class="inc-info" *ngIf="inc.datetime_incident">
+                <span class="material-icons inc-info__icon">calendar_today</span>
+                <span class="inc-info__label">Date :</span>
+                <span class="inc-info__value">
+                  {{ inc.datetime_incident | date:'dd/MM/yyyy HH:mm' }}
+                </span>
+              </div>
+
+              <div class="inc-info" *ngIf="inc.users">
+                <span class="material-icons inc-info__icon">person</span>
+                <span class="inc-info__label">Agent :</span>
+                <span class="inc-info__value">{{ inc.users }}</span>
+              </div>
+
+              <div class="inc-info" *ngIf="inc.patrolGroup">
+                <span class="material-icons inc-info__icon">groups</span>
+                <span class="inc-info__label">Groupe :</span>
+                <span class="inc-info__value">{{ inc.patrolGroup }}</span>
+              </div>
+
+              <div class="inc-info" *ngIf="inc.plantationBlock">
+                <span class="material-icons inc-info__icon">grid_view</span>
+                <span class="inc-info__label">Bloc :</span>
+                <span class="inc-info__value">{{ inc.plantationBlock }}</span>
+              </div>
+
+              <div class="inc-info"
+                   *ngIf="inc.location?.coordinates && inc.location!.coordinates!.length === 2">
+                <span class="material-icons inc-info__icon">my_location</span>
+                <span class="inc-info__label">Coords :</span>
+                <span class="inc-info__value inc-info__value--mono">
+                  {{ inc.location!.coordinates![1] | number:'1.4-4' }},
+                  {{ inc.location!.coordinates![0] | number:'1.4-4' }}
+                </span>
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </ng-container>
+  </ng-container>
+
+</div>

@@ -1,0 +1,82 @@
+<div class="login-container">
+  <div class="login-card">
+    <!-- En-tête -->
+    <div class="login-header">
+      <div class="logo-circle">
+        <span class="logo-icon">🌵</span>
+      </div>
+      <div class="title-group">
+        <h1 class="main-title">DRY FOREST</h1>
+        <p class="subtitle">Suivi des Pépinières</p>
+      </div>
+    </div>
+
+    <!-- Formulaire -->
+    <form (ngSubmit)="onSubmit()" #loginForm="ngForm" class="login-form">
+      <!-- Champ identifiant -->
+      <div class="form-group">
+        <label for="username" class="form-label">Identifiant</label>
+        <div class="input-wrapper">
+          <input
+            type="text"
+            id="username"
+            name="username"
+            [(ngModel)]="username"
+            required
+            placeholder="ADM0001"
+            class="form-input"
+            autocomplete="username"
+          >
+        </div>
+      </div>
+
+      <!-- Champ mot de passe -->
+      <div class="form-group">
+        <label for="password" class="form-label">Mot de passe</label>
+        <div class="input-wrapper">
+          <input
+            type="password"
+            id="password"
+            name="password"
+            [(ngModel)]="password"
+            required
+            placeholder="••••••••"
+            class="form-input"
+            autocomplete="current-password"
+          >
+        </div>
+      </div>
+
+      <!-- Boutons -->
+      <div class="form-actions">
+        <button
+          type="submit"
+          [disabled]="isLoading || !loginForm.form.valid"
+          class="btn btn-primary"
+        >
+          @if (isLoading) {
+            <span class="loading-spinner"></span>
+            <span>Connexion...</span>
+          } @else {
+            <span>Se connecter</span>
+          }
+        </button>
+
+        <button
+          type="button"
+          (click)="resetForm()"
+          class="btn btn-secondary"
+        >
+          Réinitialiser
+        </button>
+      </div>
+    </form>
+
+    <!-- Footer -->
+    <div class="login-footer">
+      <div class="copyright">
+        © 2024 Dry Forest
+      </div>
+    </div>
+  </div>
+</div>

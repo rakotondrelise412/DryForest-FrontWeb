@@ -1,0 +1,321 @@
+/* ═══════════════════════════════════════════════════════════════════
+   ANIMAL TRACKING — Design moderne aligné sur le Dashboard
+   Polices : Roboto (texte) + JetBrains Mono (identifiants & totaux)
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── Tokens (identiques au dashboard / speciesStat) ───────────── */
+:host {
+  --green-700:  #276749;
+  --green-500:  #38a169;
+  --green-200:  #68d391;
+  --green-100:  #c6f6d5;
+  --green-50:   #f0fff4;
+
+  --earth-700:  #7b341e;
+  --earth-600:  #92400e;
+  --earth-500:  #955138;
+  --earth-400:  #C36922;
+  --earth-100:  #fde8d8;
+
+  --amber:      #d97706;
+  --amber-100:  #fef3c7;
+
+  --danger:     #c53030;
+  --danger-bg:  #fff5f5;
+  --danger-border: #fed7d7;
+
+  --text-900:   #1a202c;
+  --text-700:   #2d3748;
+  --text-500:   #4a5568;
+  --text-400:   #718096;
+  --text-200:   #a0aec0;
+  --text-100:   #cbd5e0;
+  --text-50:    #e2e8f0;
+
+  --bg:         #f4f6f5;
+  --bg-card:    #ffffff;
+  --bg-muted:   #f7faf8;
+  --border:     #e6ede9;
+  --border-md:  #d0ddd4;
+
+  --radius-lg:  18px;
+  --radius-md:  12px;
+  --radius-sm:  8px;
+  --radius-pill: 30px;
+
+  --shadow-sm:  0 1px 3px rgba(0,0,0,.05);
+  --shadow-md:  0 4px 16px rgba(39,103,73,.07), 0 1px 3px rgba(0,0,0,.04);
+  --shadow-lg:  0 8px 32px rgba(39,103,73,.11), 0 2px 6px rgba(0,0,0,.05);
+
+  font-family: 'Roboto', sans-serif;
+  background: var(--bg);
+  display: block;
+  min-height: 100vh;
+}
+
+/* ── Racine de la page ───────────────────── */
+.at-root {
+  padding: 20px 32px 72px;
+  color: var(--text-700);
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* ── Header (identique au style speciesStat) ─ */
+.at-header {
+  margin-bottom: 32px;
+}
+
+.at-header__left {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.at-header__eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--earth-700);
+  margin-bottom: 4px;
+}
+
+.at-header__icon {
+  font-size: 18px;
+  color: var(--earth-700);
+}
+
+.at-header__title {
+  margin: 0;
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--text-900);
+  letter-spacing: -.01em;
+  line-height: 1.2;
+}
+
+.at-header__sub {
+  margin: 8px 0 0;
+  font-size: 14px;
+  color: var(--text-400);
+  font-weight: 400;
+}
+
+/* ── Loader (spinner dashboard) ──────────── */
+.spinner-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 0;
+  gap: 14px;
+  color: var(--text-400);
+}
+
+.spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid var(--border);
+  border-top-color: var(--green-500);
+  border-radius: 50%;
+  animation: spin .8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Alerte erreur ───────────────────────── */
+.alert-error {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--danger-bg);
+  border: 1px solid var(--danger-border);
+  border-radius: var(--radius-md);
+  padding: 14px 18px;
+  margin-bottom: 24px;
+  color: var(--danger);
+  font-size: 14px;
+  font-family: 'Roboto', sans-serif;
+}
+
+.alert-error .material-icons { flex-shrink: 0; }
+.alert-error p { flex: 1; margin: 0; }
+
+.btn-retry {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 16px;
+  background: #feb2b2;
+  color: #822727;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-family: 'Roboto', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background .2s;
+  white-space: nowrap;
+}
+
+.btn-retry:hover { background: #fc8181; }
+.btn-retry .material-icons { font-size: 16px; }
+
+/* ── Carte du tableau ────────────────────── */
+.table-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+  transition: box-shadow .25s, border-color .25s;
+}
+
+.table-card:hover {
+  box-shadow: var(--shadow-lg);
+  border-color: var(--border-md);
+}
+
+.table-meta {
+  padding: 14px 24px;
+  background: var(--bg-muted);
+  border-bottom: 1px solid var(--border);
+}
+
+.result-count {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--text-400);
+}
+
+.table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ── Tableau ─────────────────────────────── */
+.at-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: 'Roboto', sans-serif;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.at-table thead tr {
+  background: linear-gradient(135deg, var(--earth-500), #C36922);
+}
+
+.at-table th {
+  padding: 14px 18px;
+  text-align: left;
+  color: var(--earth-100);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+}
+
+.at-table th.num-col {
+  text-align: center;
+}
+
+/* ── Lignes ──────────────────────────────── */
+.at-row {
+  border-bottom: 1px solid var(--border);
+  transition: background .15s;
+  animation: rowFade .35s ease both;
+}
+
+.at-row:last-child { border-bottom: none; }
+
+.at-row:hover {
+  background: var(--green-50);
+}
+
+@keyframes rowFade {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.at-table td {
+  padding: 14px 18px;
+  color: var(--text-700);
+  vertical-align: middle;
+}
+
+/* ── Badge d’identifiant (ID Zone / Animal) ─ */
+.id-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  background: var(--text-50);
+  color: var(--text-500);
+  border-radius: var(--radius-pill);
+  font-family: 'JetBrains Mono', 'Roboto Mono', monospace;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* ── Badge de valeur (total observé) ──────── */
+.val-badge {
+  display: inline-block;
+  padding: 3px 12px;
+  border-radius: var(--radius-pill);
+  font-family: 'JetBrains Mono', 'Roboto Mono', monospace;
+  font-size: 12px;
+  font-weight: 500;
+  min-width: 50px;
+  text-align: center;
+}
+
+.val-badge--green {
+  background: var(--green-100);
+  color: var(--green-700);
+}
+
+/* ── Colonne numérique centrée ────────────── */
+.num-col {
+  text-align: center !important;
+}
+
+/* ── État vide ────────────────────────────── */
+.no-data {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 50px 20px;
+  text-align: center;
+  gap: 10px;
+  color: var(--text-400);
+}
+
+.no-data .material-icons {
+  font-size: 42px;
+  color: var(--text-100);
+}
+
+.no-data p {
+  margin: 0;
+  font-size: 14px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   RESPONSIVE
+   ═══════════════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  .at-root {
+    padding: 16px 16px 48px;
+  }
+
+  .at-header__title {
+    font-size: 24px;
+  }
+}

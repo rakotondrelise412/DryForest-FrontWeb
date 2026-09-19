@@ -1,0 +1,76 @@
+<!-- sidebar.component.html -->
+<div class="sidebar-container" [class.collapsed]="isCollapsed" [style.background-color]="'#955138'">
+
+  <div class="menu-sections">
+    <div class="menu-section">
+      <div class="section-header" [style.background-color]="'#C36922'">
+        <span class="material-icons">home</span>
+        <span>Reforestation</span>
+      </div>
+
+      <ul class="nav-list">
+        <li>
+          <a routerLink="/dashboard" routerLinkActive="active" class="menu-item">
+            <span class="material-icons" style="color:#F9AC5E">home</span>
+            <span class="menu-text" style="color:#F9AC5E">Tableau de bord</span>
+          </a>
+        </li>
+        <li>
+          <a routerLink="/persons" routerLinkActive="active" class="menu-item">
+            <span class="material-icons" style="color:#F9AC5E">people</span>
+            <span class="menu-text" style="color:#F9AC5E">Personnel</span>
+          </a>
+        </li>
+        <li>
+          <a routerLink="/plantation" routerLinkActive="active" class="menu-item">
+            <span class="material-icons" style="color:#F9AC5E">local_florist</span>
+            <span class="menu-text" style="color:#F9AC5E">Plantation</span>
+          </a>
+        </li>
+        <li>
+          <a routerLink="/zones" routerLinkActive="active" class="menu-item">
+            <span class="material-icons" style="color:#F9AC5E">park</span>
+            <span class="menu-text" style="color:#F9AC5E">Zones</span>
+          </a>
+        </li>
+        <li>
+          <a routerLink="/detail" routerLinkActive="active" class="menu-item">
+            <span class="material-icons" style="color:#F9AC5E">park</span>
+            <span class="menu-text" style="color:#F9AC5E">Survis especes</span>
+          </a>
+        </li>
+        <li>
+          <a routerLink="/observation-patrol" routerLinkActive="active" class="menu-item">
+            <span class="material-icons" style="color:#F9AC5E">visibility</span>
+            <span class="menu-text" style="color:#F9AC5E">Observations Patrouille</span>
+          </a>
+        </li>
+        <li>
+          <a routerLink="/incident-patrol" routerLinkActive="active" class="menu-item">
+            <span class="material-icons" style="color:#F9AC5E">settings</span>
+            <span class="menu-text" style="color:#F9AC5E">Incident patrouille</span>
+          </a>
+        </li>
+        <li>
+          <a routerLink="/species-stat" routerLinkActive="active" class="menu-item">
+            <span class="material-icons" style="color:#F9AC5E">settings</span>
+            <span class="menu-text" style="color:#F9AC5E">Statistique espèces</span>
+          </a>
+        </li>
+        <li>
+          <a routerLink="/animal-tracking" routerLinkActive="active" class="menu-item">
+            <span class="material-icons" style="color:#F9AC5E">settings</span>
+            <span class="menu-text" style="color:#F9AC5E">Animaux observer</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Sidebar Footer -->
+  <div class="sidebar-footer">
+    <div class="version-info">
+      <span style="color: #F9AC5E; font-size: 0.8rem;">Version 1.0.0</span>
+    </div>
+  </div>
+</div>

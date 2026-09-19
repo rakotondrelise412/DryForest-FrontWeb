@@ -1,0 +1,102 @@
+<header class="dashboard-header">
+  <!-- =========================
+       GAUCHE DU HEADER
+       ========================= -->
+  <div class="header-left">
+    <!-- Bouton sidebar -->
+    <button
+      type="button"
+      class="sidebar-toggle"
+      (click)="toggleSidebar()"
+      [attr.aria-label]="'HEADER.TOGGLE_SIDEBAR' | translate"
+      [title]="'HEADER.TOGGLE_SIDEBAR' | translate"
+    >
+      <span class="material-icons menu-icon" aria-hidden="true"> menu </span>
+    </button>
+
+    <!-- Titre -->
+    <div class="title-block">
+      <a href="#" class="logo-link" [attr.aria-label]="'APP.NAME' | translate">
+        <!--
+        <img
+          src="assets/images/home-dryforest.png"
+          [alt]="'APP.NAME' | translate"
+          class="site-logo"
+        />
+        -->
+      </a>
+
+      <div class="title-text">
+        <h1 class="sr-only">
+          {{ 'APP.NAME' | translate }}
+        </h1>
+
+        <p class="subtitle">
+          {{ 'APP.SUBTITLE' | translate }}
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================
+       DROITE DU HEADER
+       ========================= -->
+  @if (currentUser) {
+    <div class="header-right">
+      <!-- Sélecteur de langue -->
+      <div class="language-container">
+        <label for="language" class="language-label">
+          {{ 'HEADER.LANGUAGE' | translate }}
+        </label>
+
+        <select
+          id="language"
+          class="language-select"
+          [value]="languageService.currentLanguage()"
+          (change)="changeLanguage($any($event.target).value)"
+        >
+          <option value="mg">🇲🇬 Malagasy</option>
+
+          <option value="fr">🇫🇷 Français</option>
+
+          <option value="en">🇬🇧 English</option>
+        </select>
+      </div>
+
+      <!-- Informations utilisateur -->
+      <div class="user-info">
+        <!-- Avatar -->
+        <div class="user-avatar">
+          {{ currentUser.first_name.charAt(0) }}{{ currentUser.last_name.charAt(0) }}
+        </div>
+
+        <!-- Informations -->
+        <div class="user-details">
+          <span class="user-name">
+            {{ currentUser.first_name }}
+            {{ currentUser.last_name }}
+          </span>
+
+          <span class="user-role">
+            {{ currentUser.role?.name }}
+          </span>
+
+          <span class="user-email">
+            {{ currentUser.email }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Bouton déconnexion -->
+      <button
+        type="button"
+        class="logout-btn"
+        (click)="logout()"
+        [attr.aria-label]="'HEADER.LOGOUT' | translate"
+        [title]="'HEADER.LOGOUT' | translate"
+      >
+        <span class="material-icons" aria-hidden="true"> logout </span>
+      </button>
+    </div>
+  }
+</header>

@@ -1,0 +1,63 @@
+{
+  "APP": {
+    "NAME": "Dry Forest",
+    "SUBTITLE": "Nursery and Reforestation Monitoring",
+    "WELCOME": "Welcome to Dry Forest"
+  },
+
+  "HEADER": {
+    "LANGUAGE": "Language",
+    "TOGGLE_SIDEBAR": "Toggle sidebar",
+    "PROFILE": "Profile",
+    "LOGOUT": "Logout"
+  },
+
+  "MENU": {
+    "HOME": "Home",
+    "DASHBOARD": "Dashboard",
+    "ZONE": "Zone",
+    "REFORESTATION": "Reforestation",
+    "PLANTATION": "Plantation",
+    "PATROL": "Patrol",
+    "NURSERY": "Nursery",
+    "MONITORING": "Monitoring",
+    "INCIDENT": "Incident",
+    "REPORT": "Reports",
+    "USERS": "Users",
+    "SETTINGS": "Settings"
+  },
+
+  "AUTH": {
+    "USERNAME": "Username",
+    "PASSWORD": "Password",
+    "LOGIN": "Login",
+    "LOGOUT": "Logout",
+    "WELCOME": "Welcome",
+    "INVALID_CREDENTIALS": "Incorrect username or password"
+  },
+
+  "COMMON": {
+    "SAVE": "Save",
+    "CANCEL": "Cancel",
+    "DELETE": "Delete",
+    "EDIT": "Edit",
+    "ADD": "Add",
+    "SEARCH": "Search",
+    "FILTER": "Filter",
+    "CLOSE": "Close",
+    "BACK": "Back",
+    "NEXT": "Next",
+    "PREVIOUS": "Previous",
+    "LOADING": "Loading...",
+    "YES": "Yes",
+    "NO": "No",
+    "ACTIONS": "Actions"
+  },
+
+  "STATUS": {
+    "ACTIVE": "Active",
+    "INACTIVE": "Inactive",
+    "PENDING": "Pending",
+    "COMPLETED": "Completed"
+  }
+}

@@ -1,0 +1,122 @@
+/* src/app/layout/main-layout/main-layout.component.css */
+:host {
+  display: block;
+  min-height: 100vh;
+}
+
+/* Arrière-plan principal */
+.dashboard-main {
+  margin-left: 250px;
+  margin-top: 60px;
+  padding: 40px;
+  min-height: calc(100vh - 80px - 90px);
+  background-color: #ffffff; /* dry-sand */
+  transition: margin-left 0.3s ease;
+  background-image:
+    linear-gradient(to bottom, transparent 95%, rgba(149, 81, 56, 0.02) 100%),
+    radial-gradient(circle at 10% 20%, rgba(249, 172, 94, 0.03) 0%, transparent 20%),
+    radial-gradient(circle at 90% 80%, rgba(255, 201, 117, 0.03) 0%, transparent 20%);
+}
+
+.sidebar-collapsed .dashboard-main {
+  margin-left: 70px;
+}
+
+/* Styles des cartes et panneaux */
+.card, .panel {
+  background: #FFFFFF; /* blanc pur */
+  color: #3D291F; /* texte principal - brun foncé */
+  border-radius: 12px;
+  box-shadow:
+    0 4px 6px rgba(149, 81, 56, 0.08), /* shadow-subtle */
+    0 1px 3px rgba(0, 0, 0, 0.04);
+  padding: 24px;
+  border: 1px solid #D4B499; /* dry-clay */
+  transition: all 0.3s ease;
+  margin-bottom: 20px;
+}
+
+.card:hover, .panel:hover {
+  box-shadow:
+    0 8px 16px rgba(149, 81, 56, 0.15), /* shadow-medium */
+    0 3px 6px rgba(0, 0, 0, 0.08);
+  transform: translateY(-2px);
+  border-color: #C36922; /* dry-accent */
+}
+
+/* Titres dans les cartes */
+.card h3, .panel h3 {
+  color: #955138; /* dry-primary */
+  border-bottom: 2px solid #F9AC5E; /* dry-highlight */
+  padding-bottom: 10px;
+  margin-bottom: 20px;
+  font-weight: 600;
+}
+
+/* Éléments interactifs dans les cartes */
+.card .btn, .panel .btn {
+  background-color: #C36922; /* dry-accent */
+  color: #FFFFFF; /* texte clair */
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.card .btn:hover, .panel .btn:hover {
+  background-color: #955138; /* dry-primary */
+  transform: translateY(-1px);
+}
+
+/* Liste d'éléments dans les cartes */
+.card ul, .panel ul {
+  list-style: none;
+  padding: 0;
+}
+
+.card li, .panel li {
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(212, 180, 153, 0.3); /* dry-clay avec transparence */
+  color: #6B5240; /* texte secondaire */
+}
+
+.card li:last-child, .panel li:last-child {
+  border-bottom: none;
+}
+
+/* Badges et indicateurs */
+.badge {
+  display: inline-block;
+  background: #F9AC5E; /* dry-highlight */
+  color: #7A4A32; /* dry-dark */
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+/* Grilles dans les cartes */
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .dashboard-main {
+    margin-left: 0;
+    margin-top: 140px;
+    padding: 20px;
+    min-height: calc(100vh - 140px - 90px);
+  }
+
+  .sidebar-collapsed .dashboard-main {
+    margin-left: 0;
+  }
+
+  .card, .panel {
+    padding: 16px;
+  }
+}

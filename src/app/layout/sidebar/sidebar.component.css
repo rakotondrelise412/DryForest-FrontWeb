@@ -1,0 +1,139 @@
+/* sidebar.component.css (forme + couleurs demandées) */
+
+.sidebar-container {
+  width: 280px;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 3px 0 10px rgba(0,0,0,0.5);
+  background: #955138;
+  position: fixed;
+  top: 90px;
+  left: 0;
+  z-index: 50;
+}
+
+.sidebar-header {
+  padding: 20px;
+  border-bottom: 2px solid #C36922;
+}
+
+.logo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.logo-icon {
+  width: 60px;
+  height: 60px;
+  background-color: #C36922;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.logo-icon .material-icons {
+  color: #F9AC5E;
+  font-size: 30px;
+  width: 30px;
+  height: 30px;
+}
+
+.app-title {
+  margin: 0;
+  color: #F9AC5E;
+  font-size: 1.2rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+/* menu sections */
+.menu-sections {
+  flex: 1;
+  padding: 10px;
+  overflow-y: auto;
+}
+
+.menu-section {
+  margin-bottom: 15px;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.288);
+}
+
+/* section header */
+.section-header {
+  display: flex;
+  align-items: center;
+  padding: 12px 11px;
+  color: white;
+  font-weight: 500;
+}
+.section-header .material-icons {
+  margin-right: 12px;
+  color: #F9AC5E;
+}
+
+/* nav list / items */
+.nav-list {
+  list-style: none;
+  padding: 6px;
+  margin: 0;
+}
+.nav-list li { margin: 4px 0; }
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  height: 45px;
+  padding: 8px 5px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  color: #F9AC5E;
+}
+
+.menu-item .material-icons {
+  margin-right: 10px;
+}
+
+.menu-item:hover {
+  background-color: rgba(195, 105, 34, 0.2);
+  color: #fff;
+}
+
+.menu-item.active,
+.menu-item.router-link-active {
+  background-color: rgba(195, 105, 34, 0.45);
+  border-left: 4px solid #F9AC5E;
+  color: #fff;
+  padding-left: 6px; /* compense la bordure */
+}
+
+/* footer */
+.sidebar-footer {
+  padding: 15px;
+  border-top: 1px solid #C36922;
+}
+.version-info { text-align: center; }
+
+/* Scrollbar styling (cosmétique) */
+.menu-sections::-webkit-scrollbar { width: 5px; }
+.menu-sections::-webkit-scrollbar-track { background: rgba(195, 105, 34, 0.1); }
+.menu-sections::-webkit-scrollbar-thumb { background: #C36922; border-radius: 3px; }
+
+/* collapsed support (si tu utilises isCollapsed) */
+.sidebar-container.collapsed {
+  width: 72px;
+}
+.sidebar-container.collapsed .app-title { display: none; }
+.sidebar-container.collapsed .menu-text { display: none; }
+
+/* responsive */
+@media (max-width: 768px) {
+  .sidebar-container { width: 250px; position: fixed; transform: translateX(-100%); transition: transform .2s ease; }
+  .sidebar-container:not(.collapsed) { transform: translateX(0); }
+}

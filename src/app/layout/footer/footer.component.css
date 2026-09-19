@@ -1,0 +1,30 @@
+.dashboard-footer {
+  background: #955138;
+  color: white;
+  padding: 25px 40px;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+/* Ces classes seront appliquées par le MainLayoutComponent */
+:host-context(.sidebar-expanded) .dashboard-footer {
+  margin-left: 250px;
+}
+
+:host-context(.sidebar-collapsed) .dashboard-footer {
+  margin-left: 70px;
+}
+
+.dashboard-footer p {
+  margin: 5px 0;
+  color: #cbd5e0;
+  font-size: 14px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .dashboard-footer {
+    padding: 20px;
+    margin-left: 0 !important;
+  }
+}

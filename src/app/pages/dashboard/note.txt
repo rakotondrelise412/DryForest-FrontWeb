@@ -1,0 +1,73 @@
+// ─── Patch dashboard.ts ────────────────────────────────────────────
+// Remplacez uniquement le tableau `animations` dans @Component et la
+// méthode setSelectedYear(). Tout le reste est inchangé.
+// ──────────────────────────────────────────────────────────────────
+
+// 1. DANS @Component({ ... }) — remplacez le tableau animations :
+
+animations: [
+  // ── Apparition générale (page load, sections)
+  trigger('fadeIn', [
+    transition(':enter', [
+      style({ opacity: 0, transform: 'translateY(16px)' }),
+      animate('480ms cubic-bezier(0.4, 0, 0.2, 1)',
+        style({ opacity: 1, transform: 'translateY(0)' }))
+    ])
+  ]),
+
+  // ── Entrée en cascade (enfants créés dynamiquement)
+  trigger('staggerFade', [
+    transition('* => *', [
+      query(':enter', [
+        style({ opacity: 0, transform: 'translateY(14px)' }),
+        stagger(90, [
+          animate('380ms cubic-bezier(0.4, 0, 0.2, 1)',
+            style({ opacity: 1, transform: 'translateY(0)' }))
+        ])
+      ], { optional: true })
+    ])
+  ]),
+
+  // ── Animation des pie / donut charts au changement d'année
+  // ─ "Spring pop" : zoom depuis 0.6 avec rebond → bien plus élégant
+  //   que la rotation sur un conic-gradient
+  trigger('pieRotate', [
+    transition('* => *', [
+      animate('580ms cubic-bezier(0.34, 1.40, 0.64, 1)', keyframes([
+        style({ transform: 'scale(0.55)', opacity: 0,   offset: 0   }),
+        style({ transform: 'scale(1.06)', opacity: 1,   offset: 0.65}),
+        style({ transform: 'scale(1)',    opacity: 1,   offset: 1   })
+      ]))
+    ])
+  ]),
+
+  // ── Barres carbone (croissance depuis la base)
+  trigger('barGrow', [
+    transition(':enter', [
+      style({ transform: 'scaleY(0)', opacity: 0, transformOrigin: 'bottom' }),
+      animate('600ms cubic-bezier(0.34, 1.30, 0.64, 1)',
+        style({ transform: 'scaleY(1)', opacity: 1 }))
+    ])
+  ])
+],
+
+// ─────────────────────────────────────────────────────────────────
+// 2. DANS la classe DashboardComponent — remplacez setSelectedYear :
+
+setSelectedYear(yearStr: string): void {
+  const y = yearStr ? Number(yearStr) : null;
+  this.selectedYear$.next(y);
+  // Note : @pieRotate réagit automatiquement au changement de valeur
+  // de pieAnimationTrigger$ (= selectedYear$) — aucun isPieVisible
+  // nécessaire avec la nouvelle animation spring-pop.
+}
+
+// ─────────────────────────────────────────────────────────────────
+// Résumé des changements :
+//  • @fadeIn         — easing plus doux, délai léger pour chaque section
+//  • @staggerFade    — stagger 90ms (était 80ms), easing amélioré
+//  • @pieRotate      — remplace la rotation 0→360 par un spring-pop
+//                      (scale 0.55 → 1.06 → 1) bien plus adapté aux donuts
+//  • @barGrow        — transformOrigin bottom + spring overshoot
+//  • setSelectedYear — inchangé fonctionnellement (pieRotate auto-trigger)
+// ─────────────────────────────────────────────────────────────────

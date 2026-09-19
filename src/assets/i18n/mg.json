@@ -1,0 +1,63 @@
+{
+  "APP": {
+    "NAME": "Dry Forest",
+    "SUBTITLE": "Fanaraha-maso ny Pépinières sy ny Famerenana ny Ala",
+    "WELCOME": "Tongasoa eto amin'ny Dry Forest"
+  },
+
+  "HEADER": {
+    "LANGUAGE": "Fiteny",
+    "TOGGLE_SIDEBAR": "Hanokatra na hanakatona ny sidebar",
+    "PROFILE": "Mombamomba",
+    "LOGOUT": "Hivoaka"
+  },
+
+  "MENU": {
+    "HOME": "Fandraisana",
+    "DASHBOARD": "Tabilao",
+    "ZONE": "Faritra",
+    "REFORESTATION": "Famerenana ny ala",
+    "PLANTATION": "Fambolen-kazo",
+    "PATROL": "Fisafoana",
+    "NURSERY": "Pépinière",
+    "MONITORING": "Fanaraha-maso",
+    "INCIDENT": "Tranga",
+    "REPORT": "Tatitra",
+    "USERS": "Mpampiasa",
+    "SETTINGS": "Fikirana"
+  },
+
+  "AUTH": {
+    "USERNAME": "Anaran'ny mpampiasa",
+    "PASSWORD": "Teny miafina",
+    "LOGIN": "Hiditra",
+    "LOGOUT": "Hivoaka",
+    "WELCOME": "Tongasoa",
+    "INVALID_CREDENTIALS": "Diso ny anaran'ny mpampiasa na ny teny miafina"
+  },
+
+  "COMMON": {
+    "SAVE": "Tehirizo",
+    "CANCEL": "Aoka",
+    "DELETE": "Fafao",
+    "EDIT": "Ovay",
+    "ADD": "Ampio",
+    "SEARCH": "Karohy",
+    "FILTER": "Sivano",
+    "CLOSE": "Akatona",
+    "BACK": "Hiverina",
+    "NEXT": "Manaraka",
+    "PREVIOUS": "Teo aloha",
+    "LOADING": "Miandry...",
+    "YES": "Eny",
+    "NO": "Tsia",
+    "ACTIONS": "Asa"
+  },
+
+  "STATUS": {
+    "ACTIVE": "Mavitrika",
+    "INACTIVE": "Tsy mavitrika",
+    "PENDING": "Miandry",
+    "COMPLETED": "Vita"
+  }
+}

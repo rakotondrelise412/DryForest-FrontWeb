@@ -1,0 +1,281 @@
+<!-- zone.component.html -->
+<!--
+  Fonts: Roboto + JetBrains Mono (identiques au dashboard)
+  Assure-toi que dans index.html :
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+-->
+
+<div class="zone-root">
+
+  <!-- ══════════════════════════════════════════
+       HEADER
+  ══════════════════════════════════════════════ -->
+  <header class="zone-header">
+    <div class="zone-header__left">
+      <span class="zone-header__eyebrow">
+        <span class="live-dot"></span>Cartographie
+      </span>
+      <h1 class="zone-header__title">Zones &amp; Parcelles</h1>
+    </div>
+    <div class="zone-header__meta">
+      <span class="material-icons zone-header__leaf">map</span>
+      <span>Plantation Blocks &amp; Placettes</span>
+    </div>
+  </header>
+
+  <!-- ══════════════════════════════════════════
+       LOADING / ERROR GLOBAL
+  ══════════════════════════════════════════════ -->
+  <div *ngIf="isLoading" class="global-loading">
+    <div class="spinner"></div>
+    <p>Chargement des données…</p>
+  </div>
+
+  <div *ngIf="!isLoading && errorMessage" class="alert-error">
+    <span class="material-icons">error_outline</span>
+    <p>{{ errorMessage }}</p>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       KPI STRIP — Surface + Incidents + Observations
+  ══════════════════════════════════════════════ -->
+  <div class="kpi-strip" *ngIf="!isLoading">
+
+    <!-- Surface totale protégée -->
+    <div class="kpi-card kpi-card--earth">
+      <div class="kpi-card__icon">
+        <span class="material-icons">language</span>
+      </div>
+      <div class="kpi-card__body">
+
+        <div *ngIf="isTotalAreaProtectedLoading" class="kpi-loading">
+          <div class="spinner-sm spinner-sm--light"></div>
+        </div>
+
+        <div *ngIf="!isTotalAreaProtectedLoading && totalAreaProtectedErrorMessage"
+             class="kpi-error">
+          ⚠ {{ totalAreaProtectedErrorMessage }}
+        </div>
+
+        <ng-container *ngIf="totalAreaProtected$ | async as totalArea">
+          <div class="kpi-card__value"
+               *ngIf="!isTotalAreaProtectedLoading && !totalAreaProtectedErrorMessage">
+            {{ totalArea | number:'1.2-2' }}<span class="kpi-card__unit">ha</span>
+          </div>
+        </ng-container>
+
+        <div class="kpi-card__label">Surface protégée</div>
+      </div>
+      <div class="kpi-card__track">
+        <div class="kpi-card__track-fill" style="width:100%; background:#C36922"></div>
+      </div>
+    </div>
+
+    <!-- Zones -->
+    <div class="kpi-card kpi-card--green">
+      <div class="kpi-card__icon">
+        <span class="material-icons">forest</span>
+      </div>
+      <div class="kpi-card__body">
+        <div class="kpi-card__value">{{ zones?.length ?? 0 }}</div>
+        <div class="kpi-card__label">Zones</div>
+      </div>
+      <div class="kpi-card__track">
+        <div class="kpi-card__track-fill" style="width:100%; background:#38a169"></div>
+      </div>
+    </div>
+
+    <!-- Plantation Blocks -->
+    <div class="kpi-card kpi-card--amber">
+      <div class="kpi-card__icon">
+        <span class="material-icons">grid_view</span>
+      </div>
+      <div class="kpi-card__body">
+        <div class="kpi-card__value">{{ plantationBlocks?.length ?? 0 }}</div>
+        <div class="kpi-card__label">Plantation Blocks</div>
+      </div>
+      <div class="kpi-card__track">
+        <div class="kpi-card__track-fill" style="width:100%; background:#d97706"></div>
+      </div>
+    </div>
+
+    <!-- Placettes -->
+    <div class="kpi-card kpi-card--green">
+      <div class="kpi-card__icon">
+        <span class="material-icons">location_on</span>
+      </div>
+      <div class="kpi-card__body">
+        <div class="kpi-card__value">{{ subPlots?.length ?? 0 }}</div>
+        <div class="kpi-card__label">Placettes</div>
+      </div>
+      <div class="kpi-card__track">
+        <div class="kpi-card__track-fill" style="width:80%; background:#38a169"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       SECTION : CARTE
+  ══════════════════════════════════════════════ -->
+  <section class="zone-section">
+    <div class="section-head">
+      <div class="section-head__left">
+        <span class="section-head__icon">
+          <span class="material-icons">map</span>
+        </span>
+        <div>
+          <h2 class="section-head__title">Carte des zones</h2>
+          <p class="section-head__sub">Visualisation géographique des zones et parcelles</p>
+        </div>
+      </div>
+    </div>
+    <div id="zoneMap" class="zone-map"></div>
+  </section>
+
+  <!-- ══════════════════════════════════════════
+       SECTION : STATISTIQUES PAT
+  ══════════════════════════════════════════════ -->
+  <section class="zone-section">
+    <div class="section-head">
+      <div class="section-head__left">
+        <span class="section-head__icon section-head__icon--earth">
+          <span class="material-icons">bar_chart</span>
+        </span>
+        <div>
+          <h2 class="section-head__title">Statistiques PAT</h2>
+          <p class="section-head__sub">Incidents et observations par type</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="stats-grid">
+
+      <!-- Incidents -->
+      <div class="stat-card">
+        <div class="stat-card-header incident">
+          <span class="stat-card-icon material-icons">warning_amber</span>
+          <h3>Incidents</h3>
+        </div>
+        <ng-container *ngIf="(incidentPatCountByType$ | async) as incidents; else loadingIncident">
+          <ul class="stat-list" *ngIf="incidents.length > 0; else emptyIncident">
+            <li class="stat-item" *ngFor="let item of incidents">
+              <span class="stat-type-name">{{ item.typeName }}</span>
+              <span class="stat-count incident-count">{{ item.count }}</span>
+            </li>
+          </ul>
+          <ng-template #emptyIncident>
+            <p class="stat-empty">Aucun incident enregistré</p>
+          </ng-template>
+        </ng-container>
+        <ng-template #loadingIncident>
+          <div class="stat-loading">
+            <div class="spinner spinner-dark"></div>
+            <span>Chargement…</span>
+          </div>
+        </ng-template>
+      </div>
+
+      <!-- Observations -->
+      <div class="stat-card">
+        <div class="stat-card-header observation">
+          <span class="stat-card-icon material-icons">visibility</span>
+          <h3>Observations</h3>
+        </div>
+        <ng-container *ngIf="(observationPatCountByType$ | async) as observations; else loadingObs">
+          <ul class="stat-list" *ngIf="observations.length > 0; else emptyObs">
+            <li class="stat-item" *ngFor="let item of observations">
+              <span class="stat-type-name">{{ item.typeName }}</span>
+              <span class="stat-count observation-count">{{ item.count }}</span>
+            </li>
+          </ul>
+          <ng-template #emptyObs>
+            <p class="stat-empty">Aucune observation enregistrée</p>
+          </ng-template>
+        </ng-container>
+        <ng-template #loadingObs>
+          <div class="stat-loading">
+            <div class="spinner spinner-dark"></div>
+            <span>Chargement…</span>
+          </div>
+        </ng-template>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════
+       SECTION : LISTES
+  ══════════════════════════════════════════════ -->
+  <section class="zone-section">
+    <div class="section-head">
+      <div class="section-head__left">
+        <span class="section-head__icon">
+          <span class="material-icons">list_alt</span>
+        </span>
+        <div>
+          <h2 class="section-head__title">Inventaire</h2>
+          <p class="section-head__sub">Zones, blocs et placettes</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="lists-grid">
+
+      <!-- Zones -->
+      <div class="list-card">
+        <div class="list-card__head list-card__head--green">
+          <span class="material-icons">forest</span>
+          <h3>Zones</h3>
+          <span class="list-badge">{{ zones?.length ?? 0 }}</span>
+        </div>
+        <ul class="item-list">
+          <li class="item-row" *ngFor="let z of zones; trackBy: trackByZone">
+            <span class="item-dot item-dot--green"></span>
+            <span class="item-name">{{ z.name }}</span>
+            <span class="item-meta mono">{{ z.area | number }} ha</span>
+          </li>
+          <li class="item-empty" *ngIf="!zones?.length">Aucune zone</li>
+        </ul>
+      </div>
+
+      <!-- Plantation Blocks -->
+      <div class="list-card">
+        <div class="list-card__head list-card__head--amber">
+          <span class="material-icons">grid_view</span>
+          <h3>Placeaux</h3>
+          <span class="list-badge">{{ plantationBlocks?.length ?? 0 }}</span>
+        </div>
+        <ul class="item-list">
+          <li class="item-row" *ngFor="let b of plantationBlocks; trackBy: trackByBlock">
+            <span class="item-dot item-dot--amber"></span>
+            <span class="item-name">{{ b.name }}</span>
+            <span class="item-meta">{{ b.nb_sub_plot }} placettes</span>
+          </li>
+          <li class="item-empty" *ngIf="!plantationBlocks?.length">Aucun bloc</li>
+        </ul>
+      </div>
+
+    </div>
+
+    <!-- Placettes -->
+    <div class="list-card list-card--full">
+      <div class="list-card__head list-card__head--earth">
+        <span class="material-icons">location_on</span>
+        <h3>Placettes</h3>
+        <span class="list-badge">{{ subPlots?.length ?? 0 }}</span>
+      </div>
+      <ul class="item-list item-list--grid">
+        <li class="item-row" *ngFor="let sp of subPlots; trackBy: trackBySubPlot">
+          <span class="item-dot item-dot--earth"></span>
+          <span class="item-name">{{ sp.name }}</span>
+          <!-- <span class="item-meta" *ngIf="sp.plantation_block_id">Bloc #{{ sp.plantation_block_id }}</span> -->
+        </li>
+        <li class="item-empty" *ngIf="!subPlots?.length">Aucune placette</li>
+      </ul>
+    </div>
+
+  </section>
+
+</div>

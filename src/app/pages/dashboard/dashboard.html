@@ -1,0 +1,389 @@
+<!-- src/app/pages/dashboard/dashboard.html -->
+<!--
+  Fonts: Roboto (same as sidebar) + JetBrains Mono (numbers)
+  Add to index.html if not already present:
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+-->
+
+<div class="db-root">
+
+  <!-- ══════════════════════════════════════════
+       HEADER
+  ══════════════════════════════════════════════ -->
+  <header class="db-header" @fadeIn>
+    <div class="db-header__left">
+      <span class="db-header__eyebrow">
+        <span class="live-dot"></span>Tableau de bord
+      </span>
+      <h1 class="db-header__title">Reforestation</h1>
+    </div>
+    <div class="db-header__meta">
+      <span class="material-icons db-header__leaf">eco</span>
+      <span>Statistiques environnementales</span>
+    </div>
+  </header>
+
+  <!-- ══════════════════════════════════════════
+       KPI STRIP
+  ══════════════════════════════════════════════ -->
+  <div class="kpi-strip" @staggerFade>
+
+    <div class="kpi-card kpi-card--green">
+      <div class="kpi-card__icon">
+        <span class="material-icons">forest</span>
+      </div>
+      <div class="kpi-card__body">
+        <div class="kpi-card__value" [appCountUp]="(totalLastPlanted$ | async) ?? 0"></div>
+        <div class="kpi-card__label">Total plantés</div>
+      </div>
+      <div class="kpi-card__track">
+        <div class="kpi-card__track-fill" style="width:100%; background:#38a169"></div>
+      </div>
+    </div>
+
+    <div class="kpi-card kpi-card--amber">
+      <div class="kpi-card__icon">
+        <span class="material-icons">local_florist</span>
+      </div>
+      <div class="kpi-card__body">
+        <ng-container *ngIf="totalLatestPlanted$ | async as latest">
+          <div class="kpi-card__value">
+            <span [appCountUp]="latest?.quantity ?? 0"></span>
+          </div>
+          <div class="kpi-card__label">Dernier lot planté</div>
+          <div class="kpi-card__sub" *ngIf="latest?.zone_name">{{ latest.zone_name }}</div>
+        </ng-container>
+      </div>
+      <div class="kpi-card__track">
+        <div class="kpi-card__track-fill" style="width:65%; background:#d97706"></div>
+      </div>
+    </div>
+
+    <div class="kpi-card kpi-card--earth">
+      <div class="kpi-card__icon">
+        <span class="material-icons">favorite</span>
+      </div>
+      <div class="kpi-card__body">
+        <ng-container *ngIf="(survivalRateGlobal$ | async) as sg">
+          <div class="kpi-card__value">
+            {{ sg?.alivePercentage | number:'1.0-1' }}<span class="kpi-card__unit">%</span>
+          </div>
+        </ng-container>
+        <div class="kpi-card__label">Survie globale</div>
+      </div>
+      <div class="kpi-card__track">
+        <div class="kpi-card__track-fill" style="background:#955138"
+             [style.width]="((survivalRateGlobal$ | async)?.alivePercentage ?? 0) + '%'">
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- erreur globale -->
+  <div *ngIf="!isLoading && (errorMessage || errorMessageTotal)" class="alert-error" @fadeIn>
+    <span class="material-icons">error_outline</span>
+    <p>{{ errorMessage || errorMessageTotal }}</p>
+    <button class="btn-retry" (click)="retryAll()">
+      <span class="material-icons">refresh</span> Réessayer
+    </button>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       SECTION : SURVIE DES PLANTATIONS
+  ══════════════════════════════════════════════ -->
+  <section class="db-section" @fadeIn>
+    <div class="section-head">
+      <div class="section-head__left">
+        <span class="section-head__icon"><span class="material-icons">monitor_heart</span></span>
+        <div>
+          <h2 class="section-head__title">Survie des Plantations</h2>
+          <p class="section-head__sub">Analyse par année et indicateurs globaux</p>
+        </div>
+      </div>
+      <div class="year-selector">
+        <span class="material-icons year-selector__icon">calendar_today</span>
+        <select id="globalYearSelect" (change)="setSelectedYear($any($event.target).value)">
+          <option value="">Dernière année</option>
+          <option *ngFor="let y of (years$ | async)" [value]="y">{{ y }}</option>
+        </select>
+        <span class="material-icons year-selector__caret">expand_more</span>
+      </div>
+    </div>
+
+    <!-- ── 3 survival cards ────────────────────────────────── -->
+    <div class="survival-grid" @staggerFade>
+
+      <!-- Carte 1 : Survie globale -->
+      <div class="survival-card">
+        <div class="survival-card__head">
+          <span class="sc-badge sc-badge--green">Global</span>
+          <h4>Survie globale</h4>
+        </div>
+        <div *ngIf="isLoadingSurvivalRateGlobal" class="spinner-wrap"><div class="spinner"></div></div>
+        <div *ngIf="!isLoadingSurvivalRateGlobal && errorMessageSurvivalRateGlobal" class="mini-error">{{ errorMessageSurvivalRateGlobal }}</div>
+        <ng-container *ngIf="!isLoadingSurvivalRateGlobal">
+          <ng-container *ngIf="(survivalRateGlobal$ | async) as sg; else noGlobal">
+            <div class="pie-with-legend">
+              <div class="donut-wrapper">
+                <!-- [class.pie-animate] déclenche l'animation CSS sweep -->
+                <div class="pie-chart"
+                     [class.pie-animate]="pieAnimating"
+                     [ngStyle]="{'background': getSurvivalPieBackground(sg)}">
+                </div>
+                <div class="donut-hole"></div>
+                <div class="donut-center">
+                  <strong class="donut-pct">{{ sg?.alivePercentage | number:'1.0-0' }}%</strong>
+                  <span class="donut-lbl">vivants</span>
+                </div>
+              </div>
+              <ul class="legend">
+                <li class="legend__item">
+                  <span class="legend__dot" style="background:#38a169"></span>
+                  <span class="legend__name">Vivants</span>
+                  <strong class="legend__val">{{ sg?.alivePercentage | number:'1.0-2' }}%</strong>
+                </li>
+                <li class="legend__item">
+                  <span class="legend__dot" style="background:#92400e"></span>
+                  <span class="legend__name">Morts</span>
+                  <strong class="legend__val">{{ sg?.deadPercentage | number:'1.0-2' }}%</strong>
+                </li>
+                <li class="legend__item">
+                  <span class="legend__dot" style="background:#d97706"></span>
+                  <span class="legend__name">Auto</span>
+                  <strong class="legend__val">{{ sg?.autoGenerationPercentage | number:'1.0-2' }}%</strong>
+                </li>
+              </ul>
+            </div>
+          </ng-container>
+          <ng-template #noGlobal>
+            <div class="no-data"><span class="material-icons">data_usage</span><p>Aucune donnée globale</p></div>
+          </ng-template>
+        </ng-container>
+      </div>
+
+      <!-- Carte 2 : Survie par année -->
+      <div class="survival-card">
+        <div class="survival-card__head">
+          <span class="sc-badge sc-badge--earth">Par année</span>
+          <h4>Survie des plantations</h4>
+        </div>
+        <div *ngIf="isLoadingStatusByYear" class="spinner-wrap"><div class="spinner"></div></div>
+        <div *ngIf="!isLoadingStatusByYear && errorMessageStatusByYear" class="mini-error">{{ errorMessageStatusByYear }}</div>
+        <ng-container *ngIf="!isLoadingStatusByYear">
+          <ng-container *ngIf="selectedStatus$ | async as s; else noYear">
+            <div class="pie-with-legend">
+              <div class="donut-wrapper">
+                <div class="pie-chart"
+                     [class.pie-animate]="pieAnimating"
+                     [ngStyle]="{'background': getStatusPieBackground(s)}">
+                </div>
+                <div class="donut-hole"></div>
+                <div class="donut-center">
+                  <strong class="donut-pct" style="font-size:14px">{{ s.year }}</strong>
+                  <span class="donut-lbl">année</span>
+                </div>
+              </div>
+              <ul class="legend">
+                <li class="legend__item">
+                  <span class="legend__dot" style="background:#38a169"></span>
+                  <span class="legend__name">Vivants</span>
+                  <strong class="legend__val mono">{{ s.aliveCount | number }}</strong>
+                </li>
+                <li class="legend__item">
+                  <span class="legend__dot" style="background:#92400e"></span>
+                  <span class="legend__name">Morts</span>
+                  <strong class="legend__val mono">{{ s.deadCount | number }}</strong>
+                </li>
+                <li class="legend__item legend__item--total">
+                  <span class="legend__dot" style="background:#718096"></span>
+                  <span class="legend__name">Total</span>
+                  <strong class="legend__val mono">{{ s.totalCount | number }}</strong>
+                </li>
+              </ul>
+            </div>
+          </ng-container>
+          <ng-template #noYear>
+            <div class="no-data"><span class="material-icons">event_busy</span><p>Aucune donnée pour cette année</p></div>
+          </ng-template>
+        </ng-container>
+      </div>
+
+      <!-- Carte 3 : Ratio de survie -->
+      <div class="survival-card">
+        <div class="survival-card__head">
+          <span class="sc-badge sc-badge--amber">Ratio</span>
+          <h4>Ratio de survie</h4>
+        </div>
+        <div *ngIf="isLoadingSurvivalRate" class="spinner-wrap"><div class="spinner"></div></div>
+        <div *ngIf="!isLoadingSurvivalRate && errorMessageSurvivalRate" class="mini-error">{{ errorMessageSurvivalRate }}</div>
+        <ng-container *ngIf="!isLoadingSurvivalRate">
+          <ng-container *ngIf="selectedSurvival$ | async as ss; else noSurvival">
+            <div class="pie-with-legend">
+              <div class="donut-wrapper">
+                <div class="pie-chart"
+                     [class.pie-animate]="pieAnimating"
+                     [ngStyle]="{'background': getSurvivalPieBackground(ss)}">
+                </div>
+                <div class="donut-hole"></div>
+                <div class="donut-center">
+                  <strong class="donut-pct">{{ ss.alivePercentage | number:'1.0-0' }}%</strong>
+                  <span class="donut-lbl">{{ ss.year }}</span>
+                </div>
+              </div>
+              <ul class="legend">
+                <li class="legend__item">
+                  <span class="legend__dot" style="background:#38a169"></span>
+                  <span class="legend__name">Vivants</span>
+                  <strong class="legend__val">{{ ss.alivePercentage | number:'1.0-2' }}%</strong>
+                </li>
+                <li class="legend__item">
+                  <span class="legend__dot" style="background:#92400e"></span>
+                  <span class="legend__name">Morts</span>
+                  <strong class="legend__val">{{ ss.deadPercentage | number:'1.0-2' }}%</strong>
+                </li>
+                <li class="legend__item">
+                  <span class="legend__dot" style="background:#d97706"></span>
+                  <span class="legend__name">Auto</span>
+                  <strong class="legend__val">{{ ss.autoGenerationPercentage | number:'1.0-2' }}%</strong>
+                </li>
+              </ul>
+            </div>
+          </ng-container>
+          <ng-template #noSurvival>
+            <div class="no-data"><span class="material-icons">data_usage</span><p>Aucune donnée de survie</p></div>
+          </ng-template>
+        </ng-container>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════
+       SECTION : CARBONE
+       .scroll-reveal → animé quand visible via IntersectionObserver
+  ══════════════════════════════════════════════ -->
+  <section class="db-section scroll-reveal" @fadeIn>
+    <div class="section-head">
+      <div class="section-head__left">
+        <span class="section-head__icon section-head__icon--earth"><span class="material-icons">co2</span></span>
+        <div>
+          <h2 class="section-head__title">Carbone séquestré</h2>
+          <p class="section-head__sub">Total kgCO₂e par espèce</p>
+        </div>
+      </div>
+      <span class="unit-chip">kgCO₂e</span>
+    </div>
+
+    <div *ngIf="isLoadingSpeciesCarbon" class="spinner-wrap spinner-wrap--lg"><div class="spinner"></div></div>
+    <div *ngIf="!isLoadingSpeciesCarbon && errorMessageSpeciesCarbon" class="mini-error">{{ errorMessageSpeciesCarbon }}</div>
+
+    <ng-container *ngIf="!isLoadingSpeciesCarbon && !errorMessageSpeciesCarbon">
+      <div *ngIf="(speciesCarbon$ | async) as carbonData">
+        <div *ngIf="carbonData.length > 0; else noCarbon">
+          <div class="column-chart">
+            <div class="column-chart-inner">
+              <!-- [style.--ci] → index pour stagger CSS animation-delay -->
+              <div class="column-item" *ngFor="let item of carbonData; let i = index"
+                   [style.--ci]="i">
+                <div class="column-bar-wrapper">
+                  <div class="column-value">{{ item.totalCarbon | number:'1.0-1' }}</div>
+                  <div class="column-bar"
+                       [style.--bh]="(item.totalCarbon / getMaxCarbon(carbonData)) * 100 + '%'">
+                  </div>
+                </div>
+                <div class="column-label" [title]="item.speciesName">
+                  {{ item.speciesName.length > 10 ? (item.speciesName | slice:0:10) + '…' : item.speciesName }}
+                </div>
+              </div>
+            </div>
+            <div class="column-baseline"></div>
+            <div class="column-unit-label">kgCO₂e</div>
+          </div>
+        </div>
+        <ng-template #noCarbon>
+          <div class="no-data"><span class="material-icons">data_usage</span><p>Aucune donnée carbone</p></div>
+        </ng-template>
+      </div>
+    </ng-container>
+  </section>
+
+  <!-- ══════════════════════════════════════════
+       SECTION : RÉPARTITION PAR ZONE
+       .scroll-reveal → animé quand visible
+  ══════════════════════════════════════════════ -->
+  <section class="db-section scroll-reveal" @fadeIn>
+    <div class="section-head">
+      <div class="section-head__left">
+        <span class="section-head__icon"><span class="material-icons">forest</span></span>
+        <div>
+          <h2 class="section-head__title">Statistiques de Reforestation</h2>
+          <p class="section-head__sub">Quantité de plants par type de zone</p>
+        </div>
+      </div>
+    </div>
+
+    <ng-container *ngIf="reforestationData$ | async as data; else loadingZone">
+      <div *ngIf="(data || []).length > 0; else emptyZone">
+        <ng-container *ngIf="getLinePoints(data) as pts">
+          <svg class="zone-svg" viewBox="0 0 600 220" width="100%"
+               preserveAspectRatio="xMidYMid meet">
+            <defs>
+              <linearGradient id="lineAreaGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%"   stop-color="#C36922" stop-opacity="0.22"/>
+                <stop offset="100%" stop-color="#955138" stop-opacity="0.02"/>
+              </linearGradient>
+              <filter id="ptGlow">
+                <feGaussianBlur stdDeviation="2.5" result="b"/>
+                <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+              </filter>
+            </defs>
+
+            <ng-container *ngFor="let tick of getYAxisTicks(data)">
+              <line [attr.x1]="60" [attr.y1]="tick.y" [attr.x2]="580" [attr.y2]="tick.y"
+                    stroke="#e2e8f0" stroke-width="1" stroke-dasharray="4,3"/>
+              <text [attr.x]="54" [attr.y]="tick.y + 4" text-anchor="end"
+                    font-size="7" fill="var(--text-400)" font-family="'JetBrains Mono', monospace">
+                {{ tick.label }}
+              </text>
+            </ng-container>
+            <line x1="60" y1="164" x2="580" y2="164" stroke="#cbd5e0" stroke-width="1.5"/>
+
+            <path [attr.d]="getAreaPath(pts)"  fill="url(#lineAreaGrad)" class="zone-area"/>
+            <path [attr.d]="getLinePath(pts)"  fill="none"
+                  stroke="#955138" stroke-width="2.5" stroke-linejoin="round"
+                  class="zone-line"/>
+
+            <ng-container *ngFor="let pt of pts; let i = index">
+              <circle [attr.cx]="pt.x" [attr.cy]="pt.y" r="5.5"
+                      fill="white" stroke="#C36922" stroke-width="2.5"
+                      filter="url(#ptGlow)"
+                      class="zone-dot" [style.animation-delay]="(i * 55 + 750) + 'ms'"/>
+              <text [attr.x]="pt.x" [attr.y]="pt.y - 12"
+                    text-anchor="middle" font-size="7" fill="#955138" font-weight="700"
+                    font-family="'JetBrains Mono', monospace"
+                    class="zone-dot-label" [style.animation-delay]="(i * 55 + 820) + 'ms'">
+                {{ pt.value | number }}
+              </text>
+              <text [attr.x]="pt.x" [attr.y]="182"
+                    text-anchor="middle" font-size="7" fill="var(--text-400)"
+                    font-family="'Roboto', sans-serif">
+                {{ pt.label.length > 12 ? (pt.label | slice:0:12) + '…' : pt.label }}
+              </text>
+            </ng-container>
+          </svg>
+        </ng-container>
+      </div>
+      <ng-template #emptyZone>
+        <div class="no-data"><span class="material-icons">map</span><p>Aucune donnée de zone</p></div>
+      </ng-template>
+    </ng-container>
+    <ng-template #loadingZone>
+      <div class="zone-skeleton">
+        <div class="zone-skel-bar" *ngFor="let h of [45, 70, 55, 90, 60, 42]"
+             [style.height.%]="h"></div>
+      </div>
+    </ng-template>
+  </section>
+
+</div>

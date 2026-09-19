@@ -1,0 +1,130 @@
+<!-- plantation.component.html - updated: selects bound to ngModel + date + search button -->
+
+<div class="plantation-list-container">
+  <!-- header row -->
+  <div class="plantation-header-bar">
+    <div class="title-group">
+      <span class="material-icons title-icon" aria-hidden="true">local_florist</span>
+      <h1>Liste des Plantations</h1>
+    </div>
+
+    <div class="actions-group">
+      <button class="refresh-btn" (click)="loadPlantations()" aria-label="Rafraîchir">
+        <span class="material-icons">refresh</span>
+        Rafraîchir
+      </button>
+
+      <div class="count-badge" *ngIf="(plantations$ | async) as pList">
+        <span class="material-icons count-icon">bar_chart</span>
+        <span class="count-number">{{ pList.length }}</span>
+        <span class="count-text">plantation(s)</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- filter bar: blocks / species / subplot / date + search -->
+  <div class="filter-bar">
+    <div class="filter-group">
+      <span class="material-icons" aria-hidden="true">domain</span>
+      <select [(ngModel)]="selectedBlockId" aria-label="Bloc">
+        <option [ngValue]="null">Tous les blocs</option>
+        <option *ngFor="let block of (plantationBlock$ | async)" [ngValue]="block.id_plantation_block">
+          {{ block.name }}
+        </option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <span class="material-icons" aria-hidden="true">eco</span>
+      <select [(ngModel)]="selectedSpeciesId" (ngModelChange)="onSpeciesChange($event)" aria-label="Espèce">
+        <option [ngValue]="null">Toutes les espèces</option>
+        <option *ngFor="let s of (speciesFilter$ | async)" [ngValue]="s.id_species">
+          {{ s.mg_name }}
+        </option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <span class="material-icons" aria-hidden="true">layers</span>
+      <select [(ngModel)]="selectedSubPlotId" aria-label="Placette">
+        <option [ngValue]="null">Toutes les placettes</option>
+        <option *ngFor="let sp of (subPlotFilter$ | async)" [ngValue]="sp.id_sub_plot">
+          {{ sp.name }}
+        </option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <span class="material-icons" aria-hidden="true">event</span>
+      <input type="date" [(ngModel)]="selectedDate" aria-label="Date plantation" />
+    </div>
+
+    <div>
+      <button class="search-btn" (click)="search()" aria-label="Chercher">
+        <span class="material-icons">search</span>
+        Chercher
+      </button>
+    </div>
+  </div>
+
+  <!-- states -->
+  <div *ngIf="isLoading" class="loading">
+    <span class="material-icons state-icon loading-icon">hourglass_top</span>
+    <p>Chargement des plantations...</p>
+  </div>
+
+  <div *ngIf="!isLoading && errorMessage" class="error">
+    <span class="material-icons state-icon error-icon">error</span>
+    <p>{{ errorMessage }}</p>
+  </div>
+
+  <!-- result list -->
+  <ng-container *ngIf="!isLoading && !errorMessage">
+    <ng-container *ngIf="(plantations$ | async) as plantations">
+      <div *ngIf="!plantations || plantations.length === 0" class="no-data">
+        <span class="material-icons state-icon nodata-icon">inbox</span>
+        <p>Aucune plantation trouvée.</p>
+      </div>
+
+      <div *ngIf="plantations && plantations.length > 0" class="plantations-grid">
+        <div class="plantation-card" *ngFor="let plantation of plantations; trackBy: trackById">
+          <div class="plantation-header">
+            <div class="thumb">
+              <img *ngIf="plantation.image; else noThumb" [src]="plantation.image" alt="photo plantation" />
+              <ng-template #noThumb>
+                <span class="material-icons no-thumb-icon">image</span>
+              </ng-template>
+            </div>
+
+            <div class="meta">
+              <h3 class="plant-name">{{ plantation.plantationBlockName || 'Bloc non défini' }}</h3>
+              <div class="badges">
+                <span class="badge status" [ngClass]="{'deleted': plantation.plantationIsDeleted}">
+                  {{ getStatusText(plantation) }}
+                </span>
+                <span class="badge block">{{ plantation.plantationBlockName }}</span>
+                <span *ngIf="plantation.subPlotName" class="badge subplot">{{ plantation.subPlotName }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="plantation-body">
+            <div class="info-row">
+              <div class="info"><span class="label">Date :</span> <span class="value">{{ formatDate(plantation.datePlantation) }}</span></div>
+              <div class="info"><span class="label">N° plante :</span> <span class="value">{{ plantation.plantNumber }}</span></div>
+              <div class="info"><span class="label">Diamètre :</span> <span class="value">{{ formatNumber(plantation.diameter) }} cm</span></div>
+              <div class="info"><span class="label">Hauteur :</span> <span class="value">{{ formatNumber(plantation.height) }} m</span></div>
+            </div>
+
+            <div class="info-row">
+              <div class="info"><span class="label">Carbone (kg) :</span> <span class="value">{{ formatNumber(plantation.carbonSequestered) }}</span></div>
+              <div class="info"><span class="label">Espèce :</span> <span class="value">{{ plantation.speciesName || '—' }}</span></div>
+              <!-- <div class="info"><span class="label">Synced :</span> <span class="value">{{ plantation.plantationIsSynced ? 'Oui' : 'Non' }}</span></div> -->
+              <div class="info"><span class="label">Maj :</span> <span class="value">{{ formatDateTime(plantation.plantationUpdatedAt) }}</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+  </ng-container>
+</div>

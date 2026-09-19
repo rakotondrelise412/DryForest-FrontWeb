@@ -1,0 +1,74 @@
+<div class="at-root">
+
+  <!-- ═══════════════ HEADER ═══════════════ -->
+  <header class="at-header">
+    <div class="at-header__left">
+      <span class="at-header__eyebrow">
+        <span class="material-icons at-header__icon">pets</span>
+        Suivi animalier
+      </span>
+      <h1 class="at-header__title">Observations par Zone</h1>
+    </div>
+    <p class="at-header__sub">Suivi des observations d’animaux dans chaque zone de reforestation</p>
+  </header>
+
+  <!-- async pipe : toujours souscrit, gère tous les états -->
+  <ng-container *ngIf="animalObserved$ | async as data">
+
+    <!-- ── LOADING ─────────────────────────── -->
+    <div class="spinner-wrap" *ngIf="isLoading">
+      <div class="spinner"></div>
+      <p>Chargement des observations…</p>
+    </div>
+
+    <!-- ── ERREUR ──────────────────────────── -->
+    <div class="alert-error" *ngIf="errorMessage">
+      <span class="material-icons">error_outline</span>
+      <p>{{ errorMessage }}</p>
+      <button class="btn-retry" (click)="loadAnimalObservedByZone()">
+        <span class="material-icons">refresh</span> Réessayer
+      </button>
+    </div>
+
+    <!-- ── CONTENU (hors chargement / erreur) ── -->
+    <ng-container *ngIf="!isLoading && !errorMessage">
+
+      <!-- Carte tableau -->
+      <div class="table-card">
+        <div class="table-meta">
+          <span class="result-count">{{ data.length }} résultat(s)</span>
+        </div>
+
+        <!-- Tableau (affiché seulement si des données existent) -->
+        <div class="table-scroll" *ngIf="data.length > 0">
+          <table class="at-table">
+            <thead>
+              <tr>
+                <th>Nom de la Zone</th>
+                <th>Espèce</th>
+                <th class="num-col">Total Observé</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of data; let i = index"
+                  class="at-row" [style.animation-delay]="i * 50 + 'ms'">
+                <td><strong>{{ item.zoneName }}</strong></td>
+                <td>{{ item.animalName }}</td>
+                <td class="num-col">
+                  <span class="val-badge val-badge--green">{{ item.totalObserved }}</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- État vide (à l’intérieur de la même carte) -->
+        <div class="no-data" *ngIf="data.length === 0">
+          <span class="material-icons">pets</span>
+          <p>Aucune observation enregistrée pour le moment.</p>
+        </div>
+      </div>
+
+    </ng-container>
+  </ng-container>
+</div>
