@@ -17,7 +17,7 @@ import { SubPlotWebFilter } from '../../models/subPlotWebFilter.model';
   selector: 'app-plantation-list',
   imports: [CommonModule, FormsModule],
   templateUrl: './plantation.component.html',
-  styleUrls: ['./plantation.component.css'] 
+  styleUrls: ['./plantation.component.css'],
 })
 export class PlantationListComponent {
   plantations$: Observable<PlantationView[]> = of([]);
@@ -34,15 +34,15 @@ export class PlantationListComponent {
   errorMessage = '';
 
   constructor(
-                private plantationService: PlantationService,
-                private plantationBlockService: PlantationBlockService,
-                private speciesService: SpeciesService,
-                private subPlotService: SubPlotService
-            ) {
-      this.loadPlantations();
-      this.loadPlantationBlock();
-      this.loadSpeciesFilter();
-      this.loadSubPlotFilter();
+    private plantationService: PlantationService,
+    private plantationBlockService: PlantationBlockService,
+    private speciesService: SpeciesService,
+    private subPlotService: SubPlotService,
+  ) {
+    this.loadPlantations();
+    this.loadPlantationBlock();
+    this.loadSpeciesFilter();
+    this.loadSubPlotFilter();
   }
 
   loadPlantations(): void {
@@ -52,38 +52,40 @@ export class PlantationListComponent {
       finalize(() => {
         this.isLoading = false;
       }),
-      catchError(err => {
+      catchError((err) => {
         this.errorMessage = this.getErrorMessage(err);
         return of([] as PlantationView[]);
-      })
+      }),
     );
   }
 
   loadPlantationBlock(): void {
     this.plantationBlock$ = this.plantationBlockService.getAllPlantationBlocks().pipe(
-        catchError(err => {
-            console.error('Erreur lors de la recuperation des plantation-block', err);
-            return of([] as PlantationBlock[]);
-        })
-    )
+      catchError((err) => {
+        console.error('Erreur lors de la recuperation des plantation-block', err);
+        return of([] as PlantationBlock[]);
+      }),
+    );
   }
 
   loadSpeciesFilter(): void {
     this.speciesFilter$ = this.speciesService.getAllSpeciesFilter().pipe(
       // list: any[] car la shape côté API peut varier; on normalise ensuite
-      map((list: any[]) => list.map(s => {
-        // si l'API renvoie `id`, on crée `id_species` pour garder la logique existante
-        const id = s.id ?? s.id_species ?? s.idSpecies ?? null;
-        return {
-          ...s,
-          id_species: id
-        } as SpeciesFilter;
-      })),
-      tap(list => console.debug('[PlantationList] species list (normalized):', list)),
-      catchError(err => {
+      map((list: any[]) =>
+        list.map((s) => {
+          // si l'API renvoie `id`, on crée `id_species` pour garder la logique existante
+          const id = s.id ?? s.id_species ?? s.idSpecies ?? null;
+          return {
+            ...s,
+            id_species: id,
+          } as SpeciesFilter;
+        }),
+      ),
+      tap((list) => console.debug('[PlantationList] species list (normalized):', list)),
+      catchError((err) => {
         console.error('Erreur lors de la recuperation des espèces', err);
         return of([] as SpeciesFilter[]);
-      })
+      }),
     );
   }
 
@@ -91,13 +93,13 @@ export class PlantationListComponent {
     console.debug('[PlantationList] species changed ->', value, typeof value);
   }
 
-  loadSubPlotFilter(): void{
+  loadSubPlotFilter(): void {
     this.subPlotFilter$ = this.subPlotService.getAllSubPlotWebFilter().pipe(
-        catchError(err => {
-            console.error('Erreur lors de la récuperation des placettes', err);
-            return of([] as SubPlotWebFilter[]);
-        })
-    )
+      catchError((err) => {
+        console.error('Erreur lors de la récuperation des placettes', err);
+        return of([] as SubPlotWebFilter[]);
+      }),
+    );
   }
 
   trackById(_: number, item: PlantationView): any {
@@ -110,7 +112,7 @@ export class PlantationListComponent {
       selectedBlockId: this.selectedBlockId,
       selectedSubPlotId: this.selectedSubPlotId,
       selectedSpeciesId: this.selectedSpeciesId,
-      selectedDate: this.selectedDate
+      selectedDate: this.selectedDate,
     });
 
     this.isLoading = true;
@@ -118,9 +120,9 @@ export class PlantationListComponent {
 
     // Force conversion des ids en number ou null (évite "string" ou NaN)
     const blk = this.selectedBlockId != null ? Number(this.selectedBlockId) : null;
-    const sp  = this.selectedSubPlotId != null ? Number(this.selectedSubPlotId) : null;
+    const sp = this.selectedSubPlotId != null ? Number(this.selectedSubPlotId) : null;
     const spe = this.selectedSpeciesId != null ? Number(this.selectedSpeciesId) : null;
-    const dt  = (this.selectedDate && this.selectedDate.trim() !== '') ? this.selectedDate : null;
+    const dt = this.selectedDate && this.selectedDate.trim() !== '' ? this.selectedDate : null;
 
     console.debug('[PlantationList] normalized ->', { blk, sp, spe, dt });
 
@@ -128,13 +130,12 @@ export class PlantationListComponent {
       finalize(() => {
         this.isLoading = false;
       }),
-      catchError(err => {
+      catchError((err) => {
         this.errorMessage = this.getErrorMessage(err);
         return of([] as PlantationView[]);
-      })
+      }),
     );
   }
-
 
   private getErrorMessage(error: any): string {
     if (!error) {
@@ -153,23 +154,33 @@ export class PlantationListComponent {
   }
 
   formatDate(date?: string | null): string {
-    if (!date) { return ''; }
+    if (!date) {
+      return '';
+    }
     return new DatePipe('fr').transform(date, 'dd/MM/yyyy') || '';
   }
 
   formatDateTime(date?: string | null): string {
-    if (!date) { return ''; }
+    if (!date) {
+      return '';
+    }
     return new DatePipe('fr').transform(date, 'dd/MM/yyyy HH:mm') || '';
   }
 
   formatNumber(value?: number | null): string {
-    if (value === null || value === undefined) { return ''; }
-    return new DecimalPipe('fr').transform(value, '1.0-4') || '';
+    if (value === null || value === undefined) {
+      return '';
+    }
+    return new DecimalPipe('fr').transform(value, '1.2-2') || '';
   }
 
   getStatusText(p?: PlantationView): string {
-    if (!p) { return ''; }
-    if (p.plantationIsDeleted) { return 'Supprimée'; }
+    if (!p) {
+      return '';
+    }
+    if (p.plantationIsDeleted) {
+      return 'Supprimée';
+    }
     return p.plantationStatus ? 'Vivante' : 'Morte';
   }
 }

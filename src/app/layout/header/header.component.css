@@ -36,39 +36,19 @@
 .sidebar-toggle:hover { background: rgba(255,255,255,0.22); transform: translateY(-2px); }
 .menu-icon { font-size: 22px; }
 
-/* title block: image logo on left, subtitle below (visually) */
-.title-block {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  align-items: flex-start;
-}
-
-/* clickable logo image */
-.logo-link { display:inline-block; line-height:0; }
-.site-logo {
-  height: 36px;         /* adapte la taille si nécessaire */
-  width: auto;
-  display: block;
-  object-fit: contain;
-  border-radius: 4px;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.12);
-}
 
 /* keep a hidden H1 for accessibility */
-.sr-only {
-  position: absolute !important;
-  width: 1px; height: 1px;
-  padding: 0; margin: -1px;
-  overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+
+.title-text{
+  line-height: 0.5rem;
 }
 
 /* subtitle under the logo */
 .subtitle {
-  margin: 0;
   font-size: 13px;
   color: rgba(255,255,255,0.95);
   opacity: 0.95;
+  margin: 0;
 }
 
 /* header-right (user block + logout icon) */
@@ -112,7 +92,7 @@
 /* responsive adjustments */
 @media (max-width: 768px) {
   .site-logo { height: 28px; }
-  .dashboard-header { height: auto; padding: 10px 12px; flex-direction: column; gap:8px; align-items:flex-start; }
+  .dashboard-header { height: auto; padding: 10px 12px; gap:8px; align-items:flex-start; }
   .title-block { flex-direction: row; align-items:center; gap:10px; }
   .subtitle { display:none; } /* cacher subtitle sur petite largeur si tu veux */
   .user-details { display:none; } /* conserve seulement avatar et icônes */

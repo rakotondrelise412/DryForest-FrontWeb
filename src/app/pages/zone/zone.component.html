@@ -78,7 +78,7 @@
         <span class="material-icons">forest</span>
       </div>
       <div class="kpi-card__body">
-        <div class="kpi-card__value">{{ zones?.length ?? 0 }}</div>
+        <div class="kpi-card__value">{{ zones.length }}</div>
         <div class="kpi-card__label">Zones</div>
       </div>
       <div class="kpi-card__track">
@@ -92,7 +92,7 @@
         <span class="material-icons">grid_view</span>
       </div>
       <div class="kpi-card__body">
-        <div class="kpi-card__value">{{ plantationBlocks?.length ?? 0 }}</div>
+        <div class="kpi-card__value">{{ plantationBlocks.length  }}</div>
         <div class="kpi-card__label">Plantation Blocks</div>
       </div>
       <div class="kpi-card__track">
@@ -106,7 +106,7 @@
         <span class="material-icons">location_on</span>
       </div>
       <div class="kpi-card__body">
-        <div class="kpi-card__value">{{ subPlots?.length ?? 0 }}</div>
+        <div class="kpi-card__value">{{ subPlots.length }}</div>
         <div class="kpi-card__label">Placettes</div>
       </div>
       <div class="kpi-card__track">
@@ -228,7 +228,7 @@
         <div class="list-card__head list-card__head--green">
           <span class="material-icons">forest</span>
           <h3>Zones</h3>
-          <span class="list-badge">{{ zones?.length ?? 0 }}</span>
+          <span class="list-badge">{{ zones.length }}</span>
         </div>
         <ul class="item-list">
           <li class="item-row" *ngFor="let z of zones; trackBy: trackByZone">
@@ -236,7 +236,7 @@
             <span class="item-name">{{ z.name }}</span>
             <span class="item-meta mono">{{ z.area | number }} ha</span>
           </li>
-          <li class="item-empty" *ngIf="!zones?.length">Aucune zone</li>
+          <li class="item-empty" *ngIf="!zones.length">Aucune zone</li>
         </ul>
       </div>
 
@@ -245,7 +245,7 @@
         <div class="list-card__head list-card__head--amber">
           <span class="material-icons">grid_view</span>
           <h3>Placeaux</h3>
-          <span class="list-badge">{{ plantationBlocks?.length ?? 0 }}</span>
+          <span class="list-badge">{{ plantationBlocks.length }}</span>
         </div>
         <ul class="item-list">
           <li class="item-row" *ngFor="let b of plantationBlocks; trackBy: trackByBlock">
@@ -253,7 +253,7 @@
             <span class="item-name">{{ b.name }}</span>
             <span class="item-meta">{{ b.nb_sub_plot }} placettes</span>
           </li>
-          <li class="item-empty" *ngIf="!plantationBlocks?.length">Aucun bloc</li>
+          <li class="item-empty" *ngIf="!plantationBlocks.length">Aucun bloc</li>
         </ul>
       </div>
 
@@ -264,7 +264,7 @@
       <div class="list-card__head list-card__head--earth">
         <span class="material-icons">location_on</span>
         <h3>Placettes</h3>
-        <span class="list-badge">{{ subPlots?.length ?? 0 }}</span>
+        <span class="list-badge">{{ subPlots.length }}</span>
       </div>
       <ul class="item-list item-list--grid">
         <li class="item-row" *ngFor="let sp of subPlots; trackBy: trackBySubPlot">
@@ -272,7 +272,7 @@
           <span class="item-name">{{ sp.name }}</span>
           <!-- <span class="item-meta" *ngIf="sp.plantation_block_id">Bloc #{{ sp.plantation_block_id }}</span> -->
         </li>
-        <li class="item-empty" *ngIf="!subPlots?.length">Aucune placette</li>
+        <li class="item-empty" *ngIf="!subPlots.length">Aucune placette</li>
       </ul>
     </div>
 

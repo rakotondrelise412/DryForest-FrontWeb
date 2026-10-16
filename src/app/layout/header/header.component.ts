@@ -1,4 +1,3 @@
-// src/app/layout/header/header.component.ts
 
 import {
   Component,
@@ -15,17 +14,8 @@ import {
 } from '@angular/router';
 
 import {
-  TranslatePipe
-} from '@ngx-translate/core';
-
-import {
   AuthService
 } from '../../core/services/auth.service';
-
-import {
-  LanguageService,
-  Language
-} from '../../core/services/language.service';
 
 import {
   Person
@@ -41,7 +31,6 @@ import {
 
   imports: [
     CommonModule,
-    TranslatePipe
   ],
 
   templateUrl: './header.component.html',
@@ -53,9 +42,6 @@ import {
 export class HeaderComponent implements OnInit {
 
   currentUser: Person | null = null;
-
-  readonly languageService =
-    inject(LanguageService);
 
   constructor(
     private readonly authService: AuthService,
@@ -86,17 +72,4 @@ export class HeaderComponent implements OnInit {
 
   }
 
-  changeLanguage(
-    language: Language
-  ): void {
-
-    console.log(
-      'Langue sélectionnée :',
-      language
-    );
-
-    this.languageService.changeLanguage(
-      language
-    );
-  }
 }
