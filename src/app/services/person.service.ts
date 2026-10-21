@@ -1,17 +1,24 @@
+
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { Person } from '../models/person.model';
+import { Person, PersonPage } from '../models/person.model';
 import { ApiService } from '../core/services/api.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class PersonService {
-  private endpoint = "api/persons";
 
-  constructor(private apiService: ApiService) { }
+  private endpoint = 'api/persons';
 
-  getAllPersons(): Observable<Person[]> {
-    return this.apiService.get<Person[]>(this.endpoint);
+  constructor(private apiService: ApiService) {}
+
+  getAllPersons(
+    page: number = 0,
+    size: number = 10
+  ): Observable<PersonPage> {
+    return this.apiService.get<PersonPage>(
+      `${this.endpoint}?page=${page}&size=${size}`
+    );
   }
 }

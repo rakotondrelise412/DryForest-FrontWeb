@@ -1,63 +1,91 @@
+
 @let persons = persons$ | async;
 
 <div class="person-list-container">
-  <h1>👥 Liste des Personnes - Dry Forest</h1>
+  <h1>
+    <i class="fas fa-users" aria-hidden="true"></i>
+    Liste des Personnes - Dry Forest
+  </h1>
 
   <button (click)="loadPersons()" class="refresh-btn">
-    🔄 Rafraîchir la liste
+    <i class="fas fa-sync-alt" aria-hidden="true"></i>
+    Rafraîchir la liste
   </button>
 
   @if (isLoading) {
     <div class="loading">
-      <p>⏳ Chargement des données...</p>
+      <p>
+        <i class="fas fa-spinner fa-spin" aria-hidden="true"></i>
+        Chargement des données...
+      </p>
     </div>
-  }
-
-  @else if (errorMessage) {
+  } @else if (errorMessage) {
     <div class="error">
-      <p>❌ {{ errorMessage }}</p>
+      <p>
+        <i class="fas fa-exclamation-circle" aria-hidden="true"></i>
+        {{ errorMessage }}
+      </p>
     </div>
-  }
-
-  @else if (!persons || persons.length === 0) {
+  } @else if (!persons || persons.length === 0) {
     <div class="no-data">
-      <p>📭 Aucune personne trouvée.</p>
+      <p>
+        <i class="fas fa-inbox" aria-hidden="true"></i>
+        Aucune personne trouvée.
+      </p>
     </div>
-  }
-
-  @else {
+  } @else {
     <div class="persons-grid">
       <div class="stats">
-        <p>📊 {{ persons.length }} personne(s) trouvée(s)</p>
+        <p>
+          <i class="fas fa-chart-bar" aria-hidden="true"></i>
+          {{ totalElements }} personne(s) trouvée(s)
+        </p>
       </div>
 
-      @for (person of persons; track person.id_person) {
+      @for (person of persons; track getPersonId(person)) {
         <div class="person-card">
           <div class="person-header">
-            <span class="person-id">#{{ person.id_person }}</span>
+            <span class="person-id">
+              <i class="fas fa-id-badge" aria-hidden="true"></i>
+              #{{ getPersonId(person) }}
+            </span>
 
-            <span class="person-badge" [ngClass]="person.role?.name?.toLowerCase()">
+            <span
+              class="person-badge"
+              [ngClass]="person.role?.name?.toLowerCase()"
+            >
+              <i class="fas fa-user-shield" aria-hidden="true"></i>
               {{ person.role?.name || 'Non défini' }}
             </span>
 
-            @if (person.is_deleted) {
-              <span class="inactive-badge">Inactif</span>
+            @if (isPersonDeleted(person)) {
+              <span class="inactive-badge">
+                <i class="fas fa-user-slash" aria-hidden="true"></i>
+                Inactif
+              </span>
             }
           </div>
 
           <h3 class="person-name">
+            <i class="fas fa-user" aria-hidden="true"></i>
             {{ getFullName(person) }}
           </h3>
 
           <div class="person-details">
             <div class="detail">
-              <span class="label">Genre:</span>
+              <span class="label">
+                <i class="fas fa-venus-mars" aria-hidden="true"></i>
+                Genre:
+              </span>
               <span>{{ person.gender?.name || 'Non défini' }}</span>
             </div>
 
             @if (person.email) {
               <div class="detail">
-                <span class="label">Email:</span>
+                <span class="label">
+                  <i class="fas fa-envelope" aria-hidden="true"></i>
+                  Email:
+                </span>
                 <a [href]="'mailto:' + person.email">
                   {{ person.email }}
                 </a>
@@ -66,19 +94,28 @@
 
             @if (person.phone_number) {
               <div class="detail">
-                <span class="label">Téléphone:</span>
+                <span class="label">
+                  <i class="fas fa-phone" aria-hidden="true"></i>
+                  Téléphone:
+                </span>
                 <span>{{ person.phone_number }}</span>
               </div>
             }
 
             <div class="detail">
-              <span class="label">Adresse:</span>
+              <span class="label">
+                <i class="fas fa-map-marker-alt" aria-hidden="true"></i>
+                Adresse:
+              </span>
               <span>{{ person.address }}</span>
             </div>
 
             @if (person.site) {
               <div class="detail">
-                <span class="label">Site:</span>
+                <span class="label">
+                  <i class="fas fa-tree" aria-hidden="true"></i>
+                  Site:
+                </span>
                 <span class="site-info">
                   {{ person.site.name }}
                 </span>
@@ -86,12 +123,60 @@
             }
 
             <div class="detail">
-              <span class="label">Créé le:</span>
+              <span class="label">
+                <i class="fas fa-calendar-alt" aria-hidden="true"></i>
+                Créé le:
+              </span>
               <span>{{ formatDate(person.created_at) }}</span>
             </div>
           </div>
         </div>
       }
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination">
+      <button
+        class="refresh-btn"
+        (click)="previousPage()"
+        [disabled]="currentPage === 0 || isLoading"
+      >
+        <i class="fas fa-chevron-left" aria-hidden="true"></i>
+        Précédent
+      </button>
+
+      <span>
+        <i class="fas fa-file-alt" aria-hidden="true"></i>
+        Page {{ currentPage + 1 }} / {{ totalPages }}
+      </span>
+
+      <button
+        class="refresh-btn"
+        (click)="nextPage()"
+        [disabled]="currentPage >= totalPages - 1 || isLoading"
+      >
+        Suivant
+        <i class="fas fa-chevron-right" aria-hidden="true"></i>
+      </button>
+
+      <label for="pageSize">
+        <i class="fas fa-list-ol" aria-hidden="true"></i>
+        Afficher :
+      </label>
+
+      <select
+        id="pageSize"
+        [value]="pageSize"
+        [disabled]="isLoading"
+        (change)="changePageSize(+$any($event.target).value)"
+      >
+        <option value="5">5</option>
+        <option value="10">10</option>
+        <option value="20">20</option>
+        <option value="50">50</option>
+      </select>
+
+      <span>personnes par page</span>
     </div>
   }
 </div>
