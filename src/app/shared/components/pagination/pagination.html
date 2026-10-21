@@ -1,0 +1,39 @@
+
+<div class="pagination">
+
+  <button
+    class="pagination-btn"
+    (click)="previousPage()"
+    [disabled]="currentPage === 0 || isLoading">
+    <i class="fas fa-chevron-left" aria-hidden="true"></i>
+    Précédent
+  </button>
+
+  <span class="page-indicator">
+    Page {{ currentPage + 1 }} / {{ totalPages }}
+  </span>
+
+  <button
+    class="pagination-btn"
+    (click)="nextPage()"
+    [disabled]="currentPage >= totalPages - 1 || isLoading">
+    Suivant
+    <i class="fas fa-chevron-right" aria-hidden="true"></i>
+  </button>
+
+  <label for="pageSize">Afficher :</label>
+
+  <select
+    id="pageSize"
+    [value]="pageSize"
+    [disabled]="isLoading"
+    (change)="changePageSize(+$any($event.target).value)">
+    <option value="5">5</option>
+    <option value="10">10</option>
+    <option value="20">20</option>
+    <option value="50">50</option>
+  </select>
+
+  <span>éléments par page</span>
+
+</div>

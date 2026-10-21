@@ -6,11 +6,12 @@ import { catchError, finalize, map, tap } from 'rxjs/operators';
 
 import { PersonService } from '../../../services/person.service';
 import { Person, PersonPage } from '../../../models/person.model';
+import { PaginationComponent } from '../../../shared/components/pagination/pagination';
 
 @Component({
   selector: 'app-person-list',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule,  PaginationComponent],
   templateUrl: './person-list.html',
   styleUrls: ['./person-list.css']
 })

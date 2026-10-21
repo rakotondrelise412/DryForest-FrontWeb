@@ -1,7 +1,7 @@
 
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { Person, PersonPage } from '../models/person.model';
+import { PersonPage } from '../models/person.model';
 import { ApiService } from '../core/services/api.service';
 
 @Injectable({
