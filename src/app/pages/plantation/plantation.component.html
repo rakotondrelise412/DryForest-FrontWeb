@@ -1,4 +1,3 @@
-<!-- plantation.component.html - updated: selects bound to ngModel + date + search button -->
 
 <div class="plantation-list-container">
   <!-- header row -->
@@ -9,7 +8,7 @@
     </div>
 
     <div class="actions-group">
-      <button class="refresh-btn" (click)="loadPlantations()" aria-label="Rafraîchir">
+      <button class="refresh-btn" (click)="loadCurrentPage()" aria-label="Rafraîchir">
         <span class="material-icons">refresh</span>
         Rafraîchir
       </button>
@@ -22,62 +21,93 @@
     </div>
   </div>
 
-  <!-- filter bar: blocks / species / subplot / date + search -->
-  <div class="filter-bar">
-    <div class="filter-group">
-      <span class="material-icons" aria-hidden="true">domain</span>
-      <select [(ngModel)]="selectedBlockId" aria-label="Bloc">
-        <option [ngValue]="null">Tous les blocs</option>
-        <option
-          *ngFor="let block of plantationBlock$ | async"
-          [ngValue]="block.id_plantation_block"
-        >
-          {{ block.name }}
-        </option>
-      </select>
-    </div>
-
-    <div class="filter-group">
-      <span class="material-icons" aria-hidden="true">eco</span>
-      <select
-        [(ngModel)]="selectedSpeciesId"
-        (ngModelChange)="onSpeciesChange($event)"
-        aria-label="Espèce"
+<!-- Filtres des plantations -->
+<div class="filter-bar">
+  <div class="filter-group">
+    <span class="material-icons" aria-hidden="true">domain</span>
+    <select [(ngModel)]="selectedBlockId" aria-label="Bloc">
+      <option [ngValue]="null">Tous les blocs</option>
+      <option
+        *ngFor="let block of plantationBlock$ | async"
+        [ngValue]="block.id_plantation_block"
       >
-        <option [ngValue]="null">Toutes les espèces</option>
-        <option *ngFor="let s of speciesFilter$ | async" [ngValue]="s.id_species">
-          {{ s.mg_name }}
-        </option>
-      </select>
-    </div>
-
-    <div class="filter-group">
-      <span class="material-icons" aria-hidden="true">layers</span>
-      <select [(ngModel)]="selectedSubPlotId" aria-label="Placette">
-        <option [ngValue]="null">Toutes les placettes</option>
-        <option *ngFor="let sp of subPlotFilter$ | async" [ngValue]="sp.id_sub_plot">
-          {{ sp.name }}
-        </option>
-      </select>
-    </div>
-
-    <div class="filter-group">
-      <span class="material-icons" aria-hidden="true">event</span>
-      <input type="date" [(ngModel)]="selectedDate" aria-label="Date plantation" />
-    </div>
-
-    <div>
-      <button class="search-btn" (click)="search()" aria-label="Chercher">
-        <span class="material-icons">search</span>
-        Chercher
-      </button>
-    </div>
+        {{ block.name }}
+      </option>
+    </select>
   </div>
 
-  <!-- states -->
+  <div class="filter-group">
+    <span class="material-icons" aria-hidden="true">eco</span>
+    <select
+      [(ngModel)]="selectedSpeciesId"
+      (ngModelChange)="onSpeciesChange($event)"
+      aria-label="Espèce"
+    >
+      <option [ngValue]="null">Toutes les espèces</option>
+      <option
+        *ngFor="let s of speciesFilter$ | async"
+        [ngValue]="s.id_species"
+      >
+        {{ s.mg_name }}
+      </option>
+    </select>
+  </div>
+
+  <div class="filter-group">
+    <span class="material-icons" aria-hidden="true">layers</span>
+    <select [(ngModel)]="selectedSubPlotId" aria-label="Placette">
+      <option [ngValue]="null">Toutes les placettes</option>
+      <option
+        *ngFor="let sp of subPlotFilter$ | async"
+        [ngValue]="sp.id_sub_plot"
+      >
+        {{ sp.name }}
+      </option>
+    </select>
+  </div>
+
+  <div class="filter-group">
+    <span class="material-icons" aria-hidden="true">event</span>
+    <input
+      type="date"
+      [(ngModel)]="selectedDate"
+      aria-label="Date plantation"
+    />
+  </div>
+
+  <div class="filter-actions">
+    <button
+      type="button"
+      class="search-btn"
+      (click)="search()"
+      [disabled]="isLoading"
+      aria-label="Chercher"
+    >
+      <span class="material-icons">search</span>
+      Chercher
+    </button>
+
+    <button
+      type="button"
+      class="clear-filters-btn"
+      (click)="clearFilters()"
+      [disabled]="!hasActiveFilters || isLoading"
+      aria-label="Effacer tous les filtres"
+      title="Effacer tous les filtres"
+    >
+      <span class="material-icons">filter_alt_off</span>
+      Effacer
+    </button>
+  </div>
+</div>
+
+
+  <!-- État de chargement animé -->
+
   <div *ngIf="isLoading" class="loading">
-    <span class="material-icons state-icon loading-icon">hourglass_top</span>
-    <p>Chargement des plantations...</p>
+    <span class="material-icons state-icon loading-icon"> hourglass_top </span>
+
+    <p class="loading-text">Chargement des plantations<span class="loading-dots"></span></p>
   </div>
 
   <div *ngIf="!isLoading && errorMessage" class="error">
@@ -100,7 +130,9 @@
               <img
                 *ngIf="plantation.image; else noThumb"
                 [src]="'http://localhost:8082/' + plantation.image"
-                alt="photo plantation"
+                alt="Photo de plantation"
+                loading="lazy"
+                decoding="async"
               />
               <ng-template #noThumb>
                 <span class="material-icons no-thumb-icon">image</span>
@@ -161,4 +193,17 @@
       </div>
     </ng-container>
   </ng-container>
+
+  @if (totalElements > 0) {
+    <app-pagination
+      [currentPage]="currentPage"
+      [totalPages]="totalPages"
+      [totalElements]="totalElements"
+      [pageSize]="pageSize"
+      [isLoading]="isLoading"
+      (pageChange)="loadPlantations($event)"
+      (pageSizeChange)="changePageSize($event)"
+    >
+    </app-pagination>
+  }
 </div>

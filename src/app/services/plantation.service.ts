@@ -1,8 +1,15 @@
+
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ApiService } from '../core/services/api.service';
-import { PlantationBlockSurvivalRate, PlantationStatusByYear, PlantationView, SurvivalRate } from '../models/plantation.model';
+import {
+  PlantationBlockSurvivalRate,
+  PlantationStatusByYear,
+  PlantationView,
+  SurvivalRate
+} from '../models/plantation.model';
 import { SpeciesCarbon } from '../models/speciesFilter.model';
+import { PageResponse } from '../models/page-response.model';
 
 @Injectable({
   providedIn: 'root'
@@ -15,62 +22,94 @@ export class PlantationService {
   private speciesCarbonEndpoint = this.api + '/carbon_by_species';
   private survivalRate = this.api + '/survival_rate';
   private surviavalRateGlobal = this.api + '/survival_global';
-  private survivalDetail = `${this.api}/survival_rate_by_block_subplot_species`;
+  private survivalDetail =
+    `${this.api}/survival_rate_by_block_subplot_species`;
 
   constructor(private apiService: ApiService) {}
 
-  getAllPlantations(): Observable<PlantationView[]> {
-    return this.apiService.get<PlantationView[]>(this.endpoint);
+  getAllPlantations(
+    page: number = 0,
+    size: number = 10
+  ): Observable<PageResponse<PlantationView>> {
+    const params = new URLSearchParams({
+      page: String(page),
+      size: String(size)
+    });
+
+    return this.apiService.get<PageResponse<PlantationView>>(
+      `${this.endpoint}?${params.toString()}`
+    );
   }
 
-  plantationStatusByYear(): Observable<PlantationStatusByYear[]>{
-    return this.apiService.get<PlantationStatusByYear[]>(this.endpointStatusByYear);
+  plantationStatusByYear(): Observable<PlantationStatusByYear[]> {
+    return this.apiService.get<PlantationStatusByYear[]>(
+      this.endpointStatusByYear
+    );
   }
 
-  getCarbonSequesteredBySpecies(): Observable<SpeciesCarbon[]>{
-    return this.apiService.get<SpeciesCarbon[]>(this.speciesCarbonEndpoint);
+  getCarbonSequesteredBySpecies(): Observable<SpeciesCarbon[]> {
+    return this.apiService.get<SpeciesCarbon[]>(
+      this.speciesCarbonEndpoint
+    );
   }
 
-  getSurvivalRate(): Observable<SurvivalRate[]>{
+  getSurvivalRate(): Observable<SurvivalRate[]> {
     return this.apiService.get<SurvivalRate[]>(this.survivalRate);
   }
 
-  getSurvivalRateGlobal(): Observable<SurvivalRate | null>{
+  getSurvivalRateGlobal(): Observable<SurvivalRate | null> {
     return this.apiService.get<SurvivalRate>(this.surviavalRateGlobal);
   }
 
-  getSurvivalRateByBlockSubPlotAndSpecies(): Observable<PlantationBlockSurvivalRate[]>{
-    return this.apiService.get<PlantationBlockSurvivalRate[]>(this.survivalDetail);
+  getSurvivalRateByBlockSubPlotAndSpecies():
+    Observable<PlantationBlockSurvivalRate[]> {
+    return this.apiService.get<PlantationBlockSurvivalRate[]>(
+      this.survivalDetail
+    );
   }
 
   searchPlantations(
     idPlantationBlock?: number | null,
     idSubPlot?: number | null,
     idSpecies?: number | null,
-    datePlantation?: string | null // yyyy-MM-dd
-  ): Observable<PlantationView[]> {
+    datePlantation?: string | null,
+    page: number = 0,
+    size: number = 10
+  ): Observable<PageResponse<PlantationView>> {
     const params = new URLSearchParams();
 
-    if (idPlantationBlock !== null && idPlantationBlock !== undefined && !Number.isNaN(Number(idPlantationBlock))) {
+    if (
+      idPlantationBlock != null &&
+      !Number.isNaN(Number(idPlantationBlock))
+    ) {
       params.append('id_plantation_block', String(idPlantationBlock));
     }
-    if (idSubPlot !== null && idSubPlot !== undefined && !Number.isNaN(Number(idSubPlot))) {
+
+    if (
+      idSubPlot != null &&
+      !Number.isNaN(Number(idSubPlot))
+    ) {
       params.append('id_sub_plot', String(idSubPlot));
     }
-    if (idSpecies !== null && idSpecies !== undefined && !Number.isNaN(Number(idSpecies))) {
+
+    if (
+      idSpecies != null &&
+      !Number.isNaN(Number(idSpecies))
+    ) {
       params.append('id_species', String(idSpecies));
     }
-    if (datePlantation && datePlantation.trim() !== '') {
+
+    if (datePlantation?.trim()) {
       params.append('date_plantation', datePlantation);
     }
 
-    const query = params.toString();
-    const url = query ? `${this.endpointSearch}?${query}` : this.endpointSearch;
+    params.append('page', String(page));
+    params.append('size', String(size));
 
-    // DEBUG : affiche l'URL exacte appelée
+    const url = `${this.endpointSearch}?${params.toString()}`;
+
     console.debug('[PlantationService] GET', url);
 
-    return this.apiService.get<PlantationView[]>(url);
+    return this.apiService.get<PageResponse<PlantationView>>(url);
   }
-
 }
