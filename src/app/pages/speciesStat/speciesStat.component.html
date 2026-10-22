@@ -1,111 +1,132 @@
-<div class="sp-root">
+<div class="db-root">
 
-  <!-- ═══════════════ HEADER ═══════════════ -->
-  <header class="sp-header">
-    <div class="sp-header__left">
-      <span class="sp-header__eyebrow">
-        <span class="sp-header__icon material-icons">forest</span>
-        Statistiques
+  <!-- HEADER -->
+  <header class="db-header">
+    <div class="db-header__left">
+      <span class="db-header__eyebrow">
+        <span class="live-dot"></span>Statistiques
       </span>
-      <h1 class="sp-header__title">Espèces suivies</h1>
+      <h1 class="db-header__title">Taux de survie des plantations</h1>
+      <p class="db-header__sub">
+        Affichage des plantations classées par bloc, placette et espèce.
+      </p>
     </div>
-    <p class="sp-header__sub">Suivi de croissance & séquestration carbone par espèce</p>
+
+    <div class="db-header__meta">
+      <span class="material-icons db-header__leaf">monitor_heart</span>
+      <span>Survie par niveau hiérarchique</span>
+    </div>
   </header>
 
-  <!-- ═══════════════ FILTRES ═══════════════ -->
-  <div class="filter-card">
-    <div class="filter-card__head">
-      <span class="material-icons">tune</span>
-      <span>Filtrer par période de reboisement</span>
-    </div>
-
-    <div class="filter-row">
-      <div class="date-group">
-        <label class="input-label">Date de début</label>
-        <input type="date" class="date-input" [(ngModel)]="startDate" [max]="endDate || ''" />
-      </div>
-      <span class="date-separator">→</span>
-      <div class="date-group">
-        <label class="input-label">Date de fin</label>
-        <input type="date" class="date-input" [(ngModel)]="endDate" [min]="startDate || ''" />
-      </div>
-      <div class="filter-actions">
-        <button class="btn btn-primary" (click)="searchByDate()">
-          <span class="material-icons">search</span> Rechercher
-        </button>
-        <button class="btn btn-secondary" (click)="resetFilters()">
-          <span class="material-icons">restart_alt</span> Réinitialiser
-        </button>
-      </div>
-    </div>
-
-    <div class="alert-error" *ngIf="errorMessage">
-      <span class="material-icons">error_outline</span>
-      <p>{{ errorMessage }}</p>
-    </div>
+  <!-- ERREUR -->
+  <div *ngIf="errorMessage" class="alert-error">
+    <span class="material-icons">error_outline</span>
+    <p>{{ errorMessage }}</p>
   </div>
 
-  <!-- ═══════════════ LOADING (spinner du dashboard) ═══════════════ -->
-  <div class="spinner-wrap" *ngIf="isLoading">
+  <!-- LOADING -->
+  <div *ngIf="loading" class="loading-card">
     <div class="spinner"></div>
     <p>Chargement des données...</p>
   </div>
 
-  <!-- ═══════════════ CONTENU PRINCIPAL (async pipe) ═══════════════ -->
-  <ng-container *ngIf="speciesStat$ | async as stats">
+  <!-- DATA -->
+  <ng-container *ngIf="data$ | async as data">
 
-    <!-- État vide -->
-    <div class="no-data" *ngIf="!isLoading && stats.length === 0 && !errorMessage">
-      <span class="material-icons">forest</span>
-      <p>Aucune donnée disponible pour cette période.</p>
+    <div *ngIf="!loading && !errorMessage && data.length === 0" class="no-data-card">
+      <span class="material-icons">data_usage</span>
+      <p>Aucune donnée disponible.</p>
     </div>
 
-    <!-- Tableau -->
-    <div class="table-card" *ngIf="!isLoading && stats.length > 0">
-      <div class="table-meta">
-        <span class="result-count">{{ stats.length }} espèce(s) trouvée(s)</span>
+    <section class="db-section">
+      <div class="section-head">
+        <div class="section-head__left">
+          <span class="section-head__icon">
+            <span class="material-icons">forest</span>
+          </span>
+          <div>
+            <h2 class="section-head__title">Analyse détaillée</h2>
+            <p class="section-head__sub">Bloc → Placette → Espèce</p>
+          </div>
+        </div>
       </div>
 
-      <div class="table-scroll">
-        <table class="sp-table">
-          <thead>
-            <tr>
-              <th>Espèce</th>
-              <th>Nom malgache</th>
-              <th>Nom français</th>
-              <th>Nom anglais</th>
-              <th class="num-col">Diamètre (cm)</th>
-              <th class="num-col">Hauteur (m)</th>
-              <th class="num-col">Carbone (kg)</th>
-              <th>Date reboisement</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let stat of stats; trackBy: trackByStat; let i = index"
-                class="sp-row" [style.animation-delay]="i * 50 + 'ms'">
-              <td class="species-name">
-                <span class="name-dot"></span>
-                {{ stat.scientific_name }}
-              </td>
-              <td>{{ stat.mg_name || '—' }}</td>
-              <td>{{ stat.fr_name || '—' }}</td>
-              <td>{{ stat.en_name || '—' }}</td>
-              <td class="num-col">
-                <span class="val-badge val-badge--blue">{{ stat.diameter | number:'1.1-2' }}</span>
-              </td>
-              <td class="num-col">
-                <span class="val-badge val-badge--green">{{ stat.height | number:'1.1-2' }}</span>
-              </td>
-              <td class="num-col">
-                <span class="val-badge val-badge--amber">{{ stat.carbon_sequestered | number:'1.2-2' }}</span>
-              </td>
-              <td class="date-cell">{{ stat.date_reforestation | date:'dd/MM/yyyy' }}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
+      <div class="block-grid" *ngIf="!loading && data.length > 0">
+        <article class="block-card" *ngFor="let block of data; trackBy: trackByBlockId">
+          <div class="block-card__head">
+            <div class="block-card__title-wrap">
+              <span class="sc-badge sc-badge--green">Placeau</span>
+              <h3>{{ block.blockName }}</h3>
+            </div>
+            <!-- <span class="id-chip">#{{ block.blockId }}</span> -->
+          </div>
 
+          <div class="subplot-list" *ngIf="block.subPlots?.length">
+            <section class="subplot-card" *ngFor="let subPlot of block.subPlots; trackBy: trackBySubPlotId">
+              <div class="subplot-card__head">
+                <div class="block-card__title-wrap">
+                  <span class="sc-badge sc-badge--earth">Placette</span>
+                  <h4>{{ subPlot.subPlotName }}</h4>
+                </div>
+                <!-- <span class="id-chip id-chip--earth">#{{ subPlot.subPlotId }}</span> -->
+              </div>
+
+              <div class="species-grid" *ngIf="subPlot.speciesStats?.length">
+                <article class="species-card" *ngFor="let species of subPlot.speciesStats; trackBy: trackBySpeciesId">
+                  <div class="species-card__head">
+                    <div>
+                      <span class="species-label">Espèce</span>
+                      <strong>{{ species.speciesName }}</strong>
+                    </div>
+                    <!-- <span class="species-id">#{{ species.speciesId }}</span> -->
+                  </div>
+
+                  <div class="stats-grid">
+                    <div class="stat-box alive">
+                      <span>Vivants</span>
+                      <strong>{{ species.aliveCount }}</strong>
+                    </div>
+                    <div class="stat-box dead">
+                      <span>Morts</span>
+                      <strong>{{ species.deadCount }}</strong>
+                    </div>
+                    <div class="stat-box total">
+                      <span>Total</span>
+                      <strong>{{ species.totalCount }}</strong>
+                    </div>
+                  </div>
+
+                  <div class="rate-area">
+                    <div class="rate-area__head">
+                      <span>Taux de survie</span>
+                      <strong>{{ species.aliveRate | number:'1.0-2' }}%</strong>
+                    </div>
+
+                    <div class="progress-track">
+                      <div
+                        class="progress-fill"
+                        [style.width.%]="species.aliveRate || 0">
+                      </div>
+                    </div>
+
+                    <div class="rate-area__foot">
+                      Taux de mortalité : {{ species.deadRate | number:'1.0-2' }}%
+                    </div>
+                  </div>
+                </article>
+              </div>
+
+              <div class="no-data-inline" *ngIf="!subPlot.speciesStats?.length">
+                Aucune espèce trouvée dans cette placette.
+              </div>
+            </section>
+          </div>
+
+          <div class="no-data-inline" *ngIf="!block.subPlots?.length">
+            Aucune placette trouvée dans ce bloc.
+          </div>
+        </article>
+      </div>
+    </section>
   </ng-container>
-
 </div>

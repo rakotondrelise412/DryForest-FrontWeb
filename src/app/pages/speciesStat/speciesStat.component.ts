@@ -1,82 +1,51 @@
-import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { CommonModule } from '@angular/common';
 import { Observable, of } from 'rxjs';
 import { catchError, finalize } from 'rxjs/operators';
 
-import { PlantingMonitoringService } from '../../services/plantingMonitoring.service';
-import { SpeciesStat } from '../../models/speciesFilter.model';
+import { PlantationService } from '../../services/plantation.service';
+import { PlantationBlockSurvivalRate } from '../../models/plantation.model';
 
 @Component({
-  selector: 'app-species-stat',
+  selector: 'app-survival-rate-detail',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule],
   templateUrl: './speciesStat.component.html',
   styleUrls: ['./speciesStat.component.css']
 })
 export class SpeciesStatComponent {
-  speciesStat$: Observable<SpeciesStat[]> = of([]);
 
-  isLoading = false;
+  data$: Observable<PlantationBlockSurvivalRate[]> = of([]);
+  loading = false;
   errorMessage = '';
 
-  startDate = '';
-  endDate = '';
-
-  constructor(private plantingMonitoringService: PlantingMonitoringService) {
-    this.loadSpeciesStat();
+  constructor(private plantationService: PlantationService) {
+    this.loadData();
   }
 
-  loadSpeciesStat(): void {
-    this.isLoading = true;
+  loadData(): void {
+    this.loading = true;
     this.errorMessage = '';
 
-    this.speciesStat$ = this.plantingMonitoringService.getSpeciesStat().pipe(
-      finalize(() => (this.isLoading = false)),
-      catchError(err => {
-        this.errorMessage = this.getErrorMessage(err);
-        return of([] as SpeciesStat[]);
+    this.data$ = this.plantationService.getSurvivalRateByBlockSubPlotAndSpecies().pipe(
+      finalize(() => (this.loading = false)),
+      catchError(error => {
+        console.error('Erreur chargement survival rate', error);
+        this.errorMessage = 'Impossible de charger les données de survie.';
+        return of([] as PlantationBlockSurvivalRate[]);
       })
     );
   }
 
-  searchByDate(): void {
-    if (!this.startDate || !this.endDate) {
-      this.errorMessage = 'Veuillez sélectionner la date de début et la date de fin.';
-      return;
-    }
-    if (this.startDate > this.endDate) {
-      this.errorMessage = 'La date de début doit être inférieure ou égale à la date de fin.';
-      return;
-    }
-
-    this.isLoading = true;
-    this.errorMessage = '';
-
-    this.speciesStat$ = this.plantingMonitoringService
-      .getSpeciesStatByDate(this.startDate, this.endDate).pipe(
-        finalize(() => (this.isLoading = false)),
-        catchError(err => {
-          this.errorMessage = this.getErrorMessage(err);
-          return of([] as SpeciesStat[]);
-        })
-      );
+  trackByBlockId(index: number, item: PlantationBlockSurvivalRate): number | undefined {
+    return item.blockId;
   }
 
-  resetFilters(): void {
-    this.startDate = '';
-    this.endDate = '';
-    this.loadSpeciesStat();
+  trackBySubPlotId(index: number, item: any): number | undefined {
+    return item.subPlotId;
   }
 
-  private getErrorMessage(error: any): string {
-    if (!error) return 'Erreur inconnue';
-    if (error.status === 0) return 'Spring Boot ne répond pas. Vérifiez que le backend est démarré.';
-    if (error.status === 403 || error.status === 401) return 'Erreur CORS / autorisation. Vérifiez la configuration du backend.';
-    return `Erreur ${error.status || 'inconnue'} : ${error.message || 'Problème de connexion'}`;
-  }
-
-  trackByStat(index: number, item: SpeciesStat): string {
-    return `${item.scientific_name}-${item.date_reforestation}-${index}`;
+  trackBySpeciesId(index: number, item: any): number | undefined {
+    return item.speciesId;
   }
 }
