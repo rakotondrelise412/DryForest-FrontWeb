@@ -84,60 +84,79 @@ export class ZoneComponent implements OnInit, AfterViewInit, OnDestroy {
     this.layerGroup = L.featureGroup().addTo(this.map);
   }
 
-  private loadAllData(): void {
-    this.isLoading = true;
-    this.errorMessage = '';
+ 
+private loadAllData(): void {
+  this.isLoading = true;
+  this.errorMessage = '';
 
-    this.sub = forkJoin({
-      zones: this.zoneService.getZoneWeb().pipe(
-        catchError(err => {
-          console.error('Erreur chargement zones', err);
-          return of([] as ZoneWeb[]);
-        })
-      ),
-      blocks: this.plantationBlockService.getAll().pipe(
-        catchError(err => {
-          console.error('Erreur chargement plantation_block', err);
-          return of([] as PlantationBlocks[]);
-        })
-      ),
-      subPlots: this.subPlotService.getAllSubPlot().pipe(
-        catchError(err => {
-          console.error('Erreur chargement sub_plot', err);
-          return of([] as SubPlot[]);
-        })
-      )
-    }).subscribe({
-      next: ({ zones, blocks, subPlots }) => {
-        this.zones = zones || [];
-        this.plantationBlocks = blocks || [];
-        this.subPlots = subPlots || [];
-        this.drawAll();
-        this.isLoading = false;
-        this.cdr.detectChanges();
-      },
-      error: err => {
-        console.error('Erreur chargement carte', err);
-        this.errorMessage = 'Impossible de charger les données de la carte';
-        this.isLoading = false;
-        this.cdr.detectChanges();
-      }
-    });
-  }
+  this.sub = forkJoin({
+    zones: this.zoneService.getZoneWeb(0, 10).pipe(
+      catchError(error => {
+        console.error('Erreur chargement zones', error);
+        this.errorMessage = this.getErrorMessage(error);
+        return of(null);
+      })
+    ),
 
-  loadTotalAreaProtected(): void {
-    this.isTotalAreaProtectedLoading = true;
-    this.totalAreaProtectedErrorMessage = '';
-    this.totalAreaProtected$ = this.zoneService.getTotalAreaProtected().pipe(
-      tap(area => console.debug('Latest received:', area)),
-      catchError(err => {
-        console.error('Error fetching totalAreaProtected', err);
-        this.totalAreaProtectedErrorMessage = 'Impossible de charger le total d\'hectare protégé.';
+    blocks: this.plantationBlockService.getAll().pipe(
+      catchError(error => {
+        console.error('Erreur chargement plantation_block', error);
+        return of([] as PlantationBlocks[]);
+      })
+    ),
+
+    subPlots: this.subPlotService.getAllSubPlot().pipe(
+      catchError(error => {
+        console.error('Erreur chargement sub_plot', error);
+        return of([] as SubPlot[]);
+      })
+    )
+  }).subscribe({
+    next: ({ zones, blocks, subPlots }) => {
+      this.zones = zones?.content ?? [];
+      this.plantationBlocks = blocks ?? [];
+      this.subPlots = subPlots ?? [];
+
+      console.debug('[Carte] Zones reçues :', this.zones.length);
+      console.debug('[Carte] Blocs reçus :', this.plantationBlocks.length);
+      console.debug('[Carte] Placettes reçues :', this.subPlots.length);
+
+      this.drawAll();
+      this.isLoading = false;
+      this.cdr.detectChanges();
+    },
+
+    error: error => {
+      console.error('Erreur chargement carte', error);
+      this.errorMessage = this.getErrorMessage(error);
+      this.isLoading = false;
+      this.cdr.detectChanges();
+    }
+  });
+}
+
+
+
+loadTotalAreaProtected(): void {
+  this.isTotalAreaProtectedLoading = true;
+  this.totalAreaProtectedErrorMessage = '';
+
+  this.totalAreaProtected$ = this.zoneService
+    .getTotalAreaProtected()
+    .pipe(
+      catchError(error => {
+        console.error('Erreur surface protégée', error);
+        this.totalAreaProtectedErrorMessage =
+          "Impossible de charger la surface protégée.";
+
         return of(0);
       }),
-      finalize(() => {this.isTotalAreaProtectedLoading = false; })
-    )
-  }
+      finalize(() => {
+        this.isTotalAreaProtectedLoading = false;
+      })
+    );
+}
+  
 
   loadIncidentPatCountByType(): void {
     this.isIncidentPatCountByTypeLoading = true;

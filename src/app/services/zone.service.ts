@@ -1,22 +1,29 @@
-import { Injectable } from "@angular/core";
-import { ApiService } from "../core/services/api.service";
-import { Observable } from "rxjs";
-import { ZoneWeb } from "../models/zone.model";
+
+import { Injectable } from '@angular/core';
+import { ApiService } from '../core/services/api.service';
+import { Observable } from 'rxjs';
+import { ZoneWeb } from '../models/zone.model';
+import { PageResponse } from '../models/page-response.model';
 
 @Injectable({
-    providedIn: 'root'
+  providedIn: 'root'
 })
-export class ZoneService{
+export class ZoneService {
   private endpoint = 'api/zone';
-  private ereaProtected = `${this.endpoint}/totalAreaProtected`;
+  private areaProtected = `${this.endpoint}/totalAreaProtected`;
 
-  constructor(private apiService: ApiService){}
+  constructor(private apiService: ApiService) {}
 
-  getZoneWeb(): Observable<ZoneWeb[]>{
-    return this.apiService.get<ZoneWeb[]>(this.endpoint);
+  getZoneWeb(
+    page: number = 0,
+    size: number = 10
+  ): Observable<PageResponse<ZoneWeb>> {
+    return this.apiService.get<PageResponse<ZoneWeb>>(
+      `${this.endpoint}?page=${page}&size=${size}`
+    );
   }
 
-  getTotalAreaProtected(): Observable<number>{
-    return this.apiService.get<number>(this.ereaProtected);
+  getTotalAreaProtected(): Observable<number> {
+    return this.apiService.get<number>(this.areaProtected);
   }
 }
