@@ -1,40 +1,61 @@
+
 <div class="sp-root">
 
-  <!-- ═══════════════ HEADER ═══════════════ -->
+  <!-- EN-TÊTE -->
   <header class="sp-header">
     <div class="sp-header__left">
       <span class="sp-header__eyebrow">
         <span class="sp-header__icon material-icons">forest</span>
-        Suivi forestier
+        Suivi de la reforestation
       </span>
-      <h1 class="sp-header__title">Espèces suivies</h1>
+
+      <h1 class="sp-header__title">Suivi des espèces reboisées</h1>
     </div>
-    <p class="sp-header__sub">Suivi de croissance & séquestration carbone par espèce</p>
+
+    <p class="sp-header__sub">
+      Suivi de la croissance des arbres et de la séquestration du carbone
+    </p>
   </header>
 
-  <!-- ═══════════════ FILTRES ═══════════════ -->
+  <!-- FILTRES PAR PÉRIODE -->
   <div class="filter-card">
     <div class="filter-card__head">
-      <span class="material-icons">tune</span>
-      <span>Filtrer par période de reboisement</span>
+      <span class="material-icons">filter_alt</span>
+      <span>Filtrer les espèces par période de reboisement</span>
     </div>
 
     <div class="filter-row">
       <div class="date-group">
-        <label class="input-label">Date de début</label>
-        <input type="date" class="date-input" [(ngModel)]="startDate" [max]="endDate || ''" />
+        <label class="input-label">Date de début du reboisement</label>
+        <input
+          type="date"
+          class="date-input"
+          [(ngModel)]="startDate"
+          [max]="endDate || ''"
+        />
       </div>
+
       <span class="date-separator">→</span>
+
       <div class="date-group">
-        <label class="input-label">Date de fin</label>
-        <input type="date" class="date-input" [(ngModel)]="endDate" [min]="startDate || ''" />
+        <label class="input-label">Date de fin du reboisement</label>
+        <input
+          type="date"
+          class="date-input"
+          [(ngModel)]="endDate"
+          [min]="startDate || ''"
+        />
       </div>
+
       <div class="filter-actions">
         <button class="btn btn-primary" (click)="searchByDate()">
-          <span class="material-icons">search</span> Rechercher
+          <span class="material-icons">search</span>
+          Filtrer
         </button>
+
         <button class="btn btn-secondary" (click)="resetFilters()">
-          <span class="material-icons">restart_alt</span> Réinitialiser
+          <span class="material-icons">restart_alt</span>
+          Réinitialiser
         </button>
       </div>
     </div>
@@ -45,66 +66,105 @@
     </div>
   </div>
 
-  <!-- ═══════════════ LOADING (spinner du dashboard) ═══════════════ -->
+  <!-- CHARGEMENT -->
   <div class="spinner-wrap" *ngIf="isLoading">
     <div class="spinner"></div>
-    <p>Chargement des données...</p>
+    <p>Chargement des données de suivi des espèces...</p>
   </div>
 
-  <!-- ═══════════════ CONTENU PRINCIPAL (async pipe) ═══════════════ -->
+  <!-- DONNÉES DES ESPÈCES -->
   <ng-container *ngIf="speciesStat$ | async as stats">
 
-    <!-- État vide -->
-    <div class="no-data" *ngIf="!isLoading && stats.length === 0 && !errorMessage">
-      <span class="material-icons">forest</span>
-      <p>Aucune donnée disponible pour cette période.</p>
+    <!-- AUCUNE DONNÉE -->
+    <div
+      class="no-data"
+      *ngIf="!isLoading && stats.length === 0 && !errorMessage"
+    >
+      <span class="material-icons">park</span>
+      <p>Aucune espèce suivie pour la période sélectionnée.</p>
+      <p>Essayez une autre période de reboisement.</p>
     </div>
 
-    <!-- Tableau -->
+    <!-- TABLEAU DES ESPÈCES -->
     <div class="table-card" *ngIf="!isLoading && stats.length > 0">
+
       <div class="table-meta">
-        <span class="result-count">{{ stats.length }} espèce(s) trouvée(s)</span>
+        <span class="result-count">
+          {{ totalElements }}
+          espèce(s) suivie(s)
+        </span>
       </div>
 
       <div class="table-scroll">
         <table class="sp-table">
           <thead>
             <tr>
-              <th>Espèce</th>
+              <th>Nom scientifique</th>
               <th>Nom malgache</th>
               <th>Nom français</th>
               <th>Nom anglais</th>
               <th class="num-col">Diamètre (cm)</th>
               <th class="num-col">Hauteur (m)</th>
-              <th class="num-col">Carbone (kg)</th>
-              <th>Date reboisement</th>
+              <th class="num-col">Carbone séquestré (kg)</th>
+              <th>Date de reboisement</th>
             </tr>
           </thead>
+
           <tbody>
-            <tr *ngFor="let stat of stats; trackBy: trackByStat; let i = index"
-                class="sp-row" [style.animation-delay]="i * 50 + 'ms'">
+            <tr
+              *ngFor="let stat of stats; trackBy: trackByStat; let i = index"
+              class="sp-row"
+              [style.animation-delay]="i * 50 + 'ms'"
+            >
               <td class="species-name">
                 <span class="name-dot"></span>
                 {{ stat.scientific_name }}
               </td>
+
               <td>{{ stat.mg_name || '—' }}</td>
               <td>{{ stat.fr_name || '—' }}</td>
               <td>{{ stat.en_name || '—' }}</td>
+
               <td class="num-col">
-                <span class="val-badge val-badge--blue">{{ stat.diameter | number:'1.1-2' }}</span>
+                <span class="val-badge val-badge--blue">
+                  {{ stat.diameter | number: '1.1-2' }}
+                </span>
               </td>
+
               <td class="num-col">
-                <span class="val-badge val-badge--green">{{ stat.height | number:'1.1-2' }}</span>
+                <span class="val-badge val-badge--green">
+                  {{ stat.height | number: '1.1-2' }}
+                </span>
               </td>
+
               <td class="num-col">
-                <span class="val-badge val-badge--amber">{{ stat.carbon_sequestered | number:'1.2-2' }}</span>
+                <span class="val-badge val-badge--amber">
+                  {{ stat.carbon_sequestered | number: '1.2-2' }}
+                </span>
               </td>
-              <td class="date-cell">{{ stat.date_reforestation | date:'dd/MM/yyyy' }}</td>
+
+              <td class="date-cell">
+                {{ stat.date_reforestation | date: 'dd/MM/yyyy' }}
+              </td>
             </tr>
           </tbody>
         </table>
       </div>
     </div>
+
   </ng-container>
+
+  <!-- PAGINATION -->
+  @if (totalElements > 0) {
+    <app-pagination
+      [currentPage]="currentPage - 1"
+      [totalPages]="totalPages"
+      [totalElements]="totalElements"
+      [pageSize]="pageSize"
+      [isLoading]="isLoading"
+      (pageChange)="changePage($event + 1)"
+      (pageSizeChange)="changePageSize($event)">
+    </app-pagination>
+  }
 
 </div>

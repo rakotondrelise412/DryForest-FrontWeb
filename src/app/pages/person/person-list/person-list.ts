@@ -11,31 +11,80 @@ import { PaginationComponent } from '../../../shared/components/pagination/pagin
 @Component({
   selector: 'app-person-list',
   standalone: true,
-  imports: [CommonModule,  PaginationComponent],
+  imports: [
+    CommonModule,
+    PaginationComponent
+  ],
   templateUrl: './person-list.html',
   styleUrls: ['./person-list.css']
 })
 export class PersonListComponent {
-
   persons$: Observable<Person[]> = of([]);
 
   isLoading = false;
   errorMessage = '';
 
-  // Pagination
-  currentPage = 0;
-  pageSize = 10;
+  // Pagination : Spring Boot commence à 0.
+  currentPage = this.getSavedPage();
+  pageSize = this.getSavedPageSize();
+
   totalElements = 0;
   totalPages = 0;
 
-  constructor(private personService: PersonService) {
+  constructor(
+    private personService: PersonService
+  ) {
     this.loadPersons();
   }
 
+  /**
+   * Récupère la page enregistrée.
+   */
+  private getSavedPage(): number {
+    const page = Number(
+      localStorage.getItem('personCurrentPage')
+    );
+
+    return Number.isInteger(page) && page >= 0
+      ? page
+      : 0;
+  }
+
+  /**
+   * Récupère la taille de page enregistrée.
+   */
+  private getSavedPageSize(): number {
+    const savedSize = localStorage.getItem(
+      'personPageSize'
+    );
+
+    const size = Number(savedSize);
+
+    const allowedSizes = [
+      5, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100
+    ];
+
+    return allowedSizes.includes(size) ? size : 10;
+  }
+
+  /**
+   * Charge la page demandée.
+   */
   loadPersons(page: number = this.currentPage): void {
     this.isLoading = true;
     this.errorMessage = '';
+
     this.currentPage = page;
+
+    localStorage.setItem(
+      'personCurrentPage',
+      String(this.currentPage)
+    );
+
+    localStorage.setItem(
+      'personPageSize',
+      String(this.pageSize)
+    );
 
     this.persons$ = this.personService
       .getAllPersons(this.currentPage, this.pageSize)
@@ -44,14 +93,30 @@ export class PersonListComponent {
           this.totalElements = response.page.totalElements;
           this.totalPages = response.page.totalPages;
           this.currentPage = response.page.number;
+          this.pageSize = response.page.size;
+
+          // Enregistrer les valeurs renvoyées par le backend.
+          localStorage.setItem(
+            'personCurrentPage',
+            String(this.currentPage)
+          );
+
+          localStorage.setItem(
+            'personPageSize',
+            String(this.pageSize)
+          );
         }),
+
         map((response: PersonPage) => response.content),
-        catchError(err => {
-          this.errorMessage = this.getErrorMessage(err);
+
+        catchError(error => {
+          this.errorMessage = this.getErrorMessage(error);
           this.totalElements = 0;
           this.totalPages = 0;
+
           return of([] as Person[]);
         }),
+
         finalize(() => {
           this.isLoading = false;
         })
@@ -59,19 +124,49 @@ export class PersonListComponent {
   }
 
   previousPage(): void {
-    if (this.currentPage > 0) {
-      this.loadPersons(this.currentPage - 1);
+    if (this.isLoading || this.currentPage <= 0) {
+      return;
     }
+
+    this.loadPersons(this.currentPage - 1);
   }
 
   nextPage(): void {
-    if (this.currentPage < this.totalPages - 1) {
-      this.loadPersons(this.currentPage + 1);
+    if (
+      this.isLoading ||
+      this.currentPage >= this.totalPages - 1
+    ) {
+      return;
     }
+
+    this.loadPersons(this.currentPage + 1);
   }
 
+  /**
+   * Modifier la taille : revenir à la première page.
+   */
   changePageSize(size: number): void {
+    if (
+      this.isLoading ||
+      size <= 0 ||
+      size === this.pageSize
+    ) {
+      return;
+    }
+
     this.pageSize = size;
+    this.currentPage = 0;
+
+    localStorage.setItem(
+      'personPageSize',
+      String(size)
+    );
+
+    localStorage.setItem(
+      'personCurrentPage',
+      '0'
+    );
+
     this.loadPersons(0);
   }
 
