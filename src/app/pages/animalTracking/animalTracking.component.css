@@ -64,6 +64,11 @@
 /* ── Header (identique au style speciesStat) ─ */
 .at-header {
   margin-bottom: 32px;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .at-header__left {

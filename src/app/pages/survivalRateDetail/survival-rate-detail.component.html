@@ -3,7 +3,8 @@
 
   <!-- EN-TÊTE -->
   <header class="sp-header">
-    <div class="sp-header__left">
+    <div>
+      <div class="sp-header__left">
       <span class="sp-header__eyebrow">
         <span class="sp-header__icon material-icons">forest</span>
         Suivi de la reforestation
@@ -15,6 +16,14 @@
     <p class="sp-header__sub">
       Suivi de la croissance des arbres et de la séquestration du carbone
     </p>
+    </div>
+
+    <div class="table-meta">
+        <span class="result-count">
+          {{ totalElements }}
+          espèce(s) suivie(s)
+        </span>
+      </div>
   </header>
 
   <!-- FILTRES PAR PÉRIODE -->
@@ -87,13 +96,6 @@
 
     <!-- TABLEAU DES ESPÈCES -->
     <div class="table-card" *ngIf="!isLoading && stats.length > 0">
-
-      <div class="table-meta">
-        <span class="result-count">
-          {{ totalElements }}
-          espèce(s) suivie(s)
-        </span>
-      </div>
 
       <div class="table-scroll">
         <table class="sp-table">

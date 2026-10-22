@@ -97,3 +97,19 @@
   .subtitle { display:none; } /* cacher subtitle sur petite largeur si tu veux */
   .user-details { display:none; } /* conserve seulement avatar et icônes */
 }
+
+@media (max-width: 360px) {
+ 
+  .title-block {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .title-block h1,
+  .title-text {
+    font-size: 16px;
+    line-height: 1.2;
+  }
+
+  
+}

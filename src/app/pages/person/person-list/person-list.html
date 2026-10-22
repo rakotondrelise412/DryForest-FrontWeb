@@ -132,16 +132,17 @@
 
     <!-- Pagination -->
 
-   @if (totalElements > 0) {
-  <app-pagination
-    [currentPage]="currentPage"
-    [totalPages]="totalPages"
-    [totalElements]="totalElements"
-    [pageSize]="pageSize"
-    [isLoading]="isLoading"
-    (pageChange)="loadPersons($event)"
-    (pageSizeChange)="changePageSize($event)">
-  </app-pagination>
-}
+    @if (totalElements > 0) {
+      <app-pagination
+        [currentPage]="currentPage"
+        [totalPages]="totalPages"
+        [totalElements]="totalElements"
+        [pageSize]="pageSize"
+        [isLoading]="isLoading"
+        (pageChange)="loadPersons($event)"
+        (pageSizeChange)="changePageSize($event)"
+      >
+      </app-pagination>
+    }
   }
 </div>
