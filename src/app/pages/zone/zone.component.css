@@ -468,18 +468,39 @@
   margin-bottom: 16px;
 }
 
+
 .list-card {
-  background: var(--bg-muted);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
+  background: var(--bg-muted, #ffffff);
+  border: 1px solid var(--border, #e5e7eb);
+  border-radius: var(--radius-md, 12px);
   overflow: hidden;
-  transition: transform .22s, box-shadow .22s;
+  transition:
+    transform 0.22s ease,
+    box-shadow 0.22s ease,
+    border-color 0.22s ease;
 }
 
 .list-card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-lg);
+  transform: translateY(-3px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+  border-color: #c36922;
 }
+
+.list-card:focus-within {
+  outline: 2px solid #c36922;
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .list-card {
+    transition: none;
+  }
+
+  .list-card:hover {
+    transform: none;
+  }
+}
+
 
 .list-card--full {
   grid-column: 1 / -1;

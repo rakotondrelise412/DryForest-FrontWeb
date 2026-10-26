@@ -27,14 +27,11 @@ import { PaginationComponent } from '../../shared/components/pagination/paginati
 
 export class AnimalTrackingComponent implements OnInit {
 
-  // Liste des animaux observés affichée dans le tableau.
   animalObserved$: Observable<AnimalObservedByZone[]> = of([]);
 
-  // État du composant.
   isLoading = false;
   errorMessage = '';
 
-  // Pagination : Spring Boot commence à 0.
   currentPage = this.getSavedPage();
   pageSize = this.getSavedPageSize();
 
@@ -49,9 +46,6 @@ export class AnimalTrackingComponent implements OnInit {
     this.loadAnimalObservedByZone();
   }
 
-  /**
-   * Récupérer la page enregistrée.
-   */
   private getSavedPage(): number {
     const page = Number(
       localStorage.getItem('animalObservedCurrentPage')
@@ -62,9 +56,6 @@ export class AnimalTrackingComponent implements OnInit {
       : 0;
   }
 
-  /**
-   * Récupérer la taille de page enregistrée.
-   */
   private getSavedPageSize(): number {
     const savedSize = localStorage.getItem(
       'animalObservedPageSize'
@@ -81,9 +72,7 @@ export class AnimalTrackingComponent implements OnInit {
       : 10;
   }
 
-  /**
-   * Charger les animaux observés par zone.
-   */
+ 
   loadAnimalObservedByZone(
     page: number = this.currentPage
   ): void {
@@ -109,13 +98,11 @@ export class AnimalTrackingComponent implements OnInit {
       )
       .pipe(
         tap((response: PageResponse<AnimalObservedByZone>) => {
-          // Mise à jour avec les valeurs du backend.
           this.totalElements = response.page.totalElements;
           this.totalPages = response.page.totalPages;
           this.currentPage = response.page.number;
           this.pageSize = response.page.size;
 
-          // Enregistrer les valeurs reçues.
           localStorage.setItem(
             'animalObservedCurrentPage',
             String(this.currentPage)
@@ -127,7 +114,6 @@ export class AnimalTrackingComponent implements OnInit {
           );
         }),
 
-        // Le HTML reçoit uniquement le tableau des résultats.
         map((response: PageResponse<AnimalObservedByZone>) =>
           response.content
         ),
@@ -151,9 +137,6 @@ export class AnimalTrackingComponent implements OnInit {
       );
   }
 
-  /**
-   * Page précédente.
-   */
   previousPage(): void {
     if (this.isLoading || this.currentPage <= 0) {
       return;
@@ -164,9 +147,7 @@ export class AnimalTrackingComponent implements OnInit {
     );
   }
 
-  /**
-   * Page suivante.
-   */
+
   nextPage(): void {
     if (
       this.isLoading ||
@@ -180,9 +161,6 @@ export class AnimalTrackingComponent implements OnInit {
     );
   }
 
-  /**
-   * Modifier la taille de page.
-   */
   changePageSize(size: number): void {
     if (
       this.isLoading ||
@@ -208,9 +186,6 @@ export class AnimalTrackingComponent implements OnInit {
     this.loadAnimalObservedByZone(0);
   }
 
-  /**
-   * Afficher un message adapté en cas d'erreur.
-   */
   private getErrorMessage(error: any): string {
     if (!error) {
       return 'Erreur inconnue.';

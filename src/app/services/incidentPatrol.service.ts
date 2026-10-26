@@ -1,23 +1,36 @@
-import { CountByType } from './../models/countByType.model';
-import { Injectable } from "@angular/core";
-import { ApiService } from "../core/services/api.service";
-import { Observable } from "rxjs";
-import { IncidentPatrol } from "../models/incidentPatrol";
+
+import { Injectable } from '@angular/core';
+import { Observable } from 'rxjs';
+
+import { ApiService } from '../core/services/api.service';
+import { IncidentPatrol } from '../models/incidentPatrol';
+import { CountByType } from '../models/countByType.model';
+import { PageResponse } from '../models/page-response.model';
 
 @Injectable({
   providedIn: 'root'
 })
-export class IncidentPatrolService{
-  private api = 'api/incidentPatrol';
-  private incidentPatCountByType = `${this.api}/countByType`;
+export class IncidentPatrolService {
 
-  constructor(private apiService: ApiService){}
+  private readonly api = 'api/incidentPatrol';
+  private readonly incidentPatCountByType = `${this.api}/countByType`;
 
-  getAll(): Observable<IncidentPatrol[]>{
-    return this.apiService.get<IncidentPatrol[]>(this.api);
+  constructor(private readonly apiService: ApiService) {}
+
+ 
+  getAll(
+    page: number = 0,
+    size: number = 10
+  ): Observable<PageResponse<IncidentPatrol>> {
+    return this.apiService.get<PageResponse<IncidentPatrol>>(
+      `${this.api}?page=${page}&size=${size}`
+    );
   }
 
-  getIncidentPatCountByType(): Observable<CountByType[]>{
-    return this.apiService.get<CountByType[]>(this.incidentPatCountByType);
+ 
+  getIncidentPatCountByType(): Observable<CountByType[]> {
+    return this.apiService.get<CountByType[]>(
+      this.incidentPatCountByType
+    );
   }
 }

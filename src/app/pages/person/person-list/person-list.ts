@@ -24,7 +24,6 @@ export class PersonListComponent {
   isLoading = false;
   errorMessage = '';
 
-  // Pagination : Spring Boot commence à 0.
   currentPage = this.getSavedPage();
   pageSize = this.getSavedPageSize();
 
@@ -37,9 +36,7 @@ export class PersonListComponent {
     this.loadPersons();
   }
 
-  /**
-   * Récupère la page enregistrée.
-   */
+ 
   private getSavedPage(): number {
     const page = Number(
       localStorage.getItem('personCurrentPage')
@@ -50,9 +47,7 @@ export class PersonListComponent {
       : 0;
   }
 
-  /**
-   * Récupère la taille de page enregistrée.
-   */
+  
   private getSavedPageSize(): number {
     const savedSize = localStorage.getItem(
       'personPageSize'
@@ -67,9 +62,7 @@ export class PersonListComponent {
     return allowedSizes.includes(size) ? size : 10;
   }
 
-  /**
-   * Charge la page demandée.
-   */
+ 
   loadPersons(page: number = this.currentPage): void {
     this.isLoading = true;
     this.errorMessage = '';
@@ -95,7 +88,6 @@ export class PersonListComponent {
           this.currentPage = response.page.number;
           this.pageSize = response.page.size;
 
-          // Enregistrer les valeurs renvoyées par le backend.
           localStorage.setItem(
             'personCurrentPage',
             String(this.currentPage)
@@ -142,9 +134,7 @@ export class PersonListComponent {
     this.loadPersons(this.currentPage + 1);
   }
 
-  /**
-   * Modifier la taille : revenir à la première page.
-   */
+  
   changePageSize(size: number): void {
     if (
       this.isLoading ||

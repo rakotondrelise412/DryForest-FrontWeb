@@ -1,16 +1,19 @@
 
-export interface IncidentPatrol{
+export interface IncidentPatrol {
   id_incident_patrol: number;
-  datetime_incident: string | null;
+  uuid?: string;
+  datetime_incident?: string;
+  description?: string;
+  image?: string;
+  severity?: string;
+  type_incident_patrol?: string;
+  patrolGroup?: string;
+  users?: string;
+  zone?: string;
+  plantationBlock?: string;
+
   location?: {
-    type?: string;
-    coordinates?: number[];
+    type: string;
+    coordinates: number[];
   };
-  description: string;
-  image: string;
-  patrolGroup: string;
-  users: string;
-  zone: string;
-  plantationBlock: string;
-  severity: string;
 }
