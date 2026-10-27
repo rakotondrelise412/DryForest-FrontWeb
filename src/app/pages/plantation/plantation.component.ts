@@ -32,7 +32,6 @@ export class PlantationListComponent {
   speciesFilter$: Observable<SpeciesFilter[]> = of([]);
   subPlotFilter$: Observable<SubPlotWebFilter[]> = of([]);
 
-  // Filtres restaurés après actualisation.
   selectedBlockId = this.getSavedNumberFilter(
     'plantationSelectedBlockId'
   );
@@ -48,7 +47,6 @@ export class PlantationListComponent {
   selectedDate: string | null =
     localStorage.getItem('plantationSelectedDate') || null;
 
-  // Pagination : Spring Boot commence à 0.
   currentPage = this.getSavedPage();
   pageSize = this.getSavedPageSize();
 
@@ -73,9 +71,7 @@ export class PlantationListComponent {
     this.loadSubPlotFilter();
   }
 
-  /**
-   * Récupère la page enregistrée.
-   */
+  
   private getSavedPage(): number {
     const page = Number(
       localStorage.getItem('plantationCurrentPage')
@@ -84,9 +80,7 @@ export class PlantationListComponent {
     return Number.isInteger(page) && page >= 0 ? page : 0;
   }
 
-  /**
-   * Récupère la taille de page enregistrée.
-   */
+  
   private getSavedPageSize(): number {
     const size = Number(
       localStorage.getItem('plantationPageSize')
@@ -99,9 +93,7 @@ export class PlantationListComponent {
     return allowedSizes.includes(size) ? size : 10;
   }
 
-  /**
-   * Récupère un identifiant numérique de filtre.
-   */
+  
   private getSavedNumberFilter(key: string): number | null {
     const savedValue = localStorage.getItem(key);
 
@@ -114,9 +106,7 @@ export class PlantationListComponent {
     return Number.isFinite(value) ? value : null;
   }
 
-  /**
-   * Enregistre les filtres actifs.
-   */
+ 
   private saveFilters(): void {
     this.saveNumberFilter(
       'plantationSelectedBlockId',
@@ -154,11 +144,13 @@ export class PlantationListComponent {
     }
   }
 
+
   loadPlantations(page: number = this.currentPage): void {
     this.currentPage = page;
     this.loadCurrentPage();
   }
 
+ 
   loadPlantationBlock(): void {
     this.plantationBlock$ = this.plantationBlockService
       .getAllPlantationBlocks()
@@ -176,6 +168,7 @@ export class PlantationListComponent {
     );
   }
 
+ 
   clearFilters(): void {
     if (this.isLoading || !this.hasActiveFilters) {
       return;
@@ -190,24 +183,26 @@ export class PlantationListComponent {
 
     this.saveFilters();
 
-    localStorage.setItem(
-      'plantationCurrentPage',
-      '0'
-    );
+    localStorage.setItem('plantationCurrentPage', '0');
 
     this.loadCurrentPage();
   }
 
+ 
   loadSpeciesFilter(): void {
     this.speciesFilter$ = this.speciesService
-      .getAllSpeciesFilter()
+      .getAllSpeciesFilter(0, 100)
       .pipe(
-        map((response: any) => {
+        map((response) => {
           const list = response?.content ?? [];
 
-          return list.map((s: any) => ({
-            ...s,
-            id_species: s.id ?? s.id_species ?? s.idSpecies ?? null
+          return list.map((species) => ({
+            ...species,
+            id_species:
+              species.id ??
+              species.id_species ??
+              species.id_species ??
+              null
           }) as SpeciesFilter);
         }),
         catchError(() => of([] as SpeciesFilter[]))
@@ -215,7 +210,6 @@ export class PlantationListComponent {
   }
 
   onSpeciesChange(value: any): void {
-    // Réservé à une éventuelle logique lors du changement d'espèce.
   }
 
   loadSubPlotFilter(): void {
@@ -230,24 +224,17 @@ export class PlantationListComponent {
     return item?.idPlantation ?? _;
   }
 
-  /**
-   * Nouvelle recherche : revenir à la première page.
-   */
+ 
   search(): void {
     this.currentPage = 0;
 
-    localStorage.setItem(
-      'plantationCurrentPage',
-      '0'
-    );
+    localStorage.setItem('plantationCurrentPage', '0');
 
     this.saveFilters();
     this.loadCurrentPage();
   }
 
-  /**
-   * Modifier la taille : revenir à la première page.
-   */
+  
   changePageSize(size: number): void {
     if (
       this.isLoading ||
@@ -265,23 +252,19 @@ export class PlantationListComponent {
       String(size)
     );
 
-    localStorage.setItem(
-      'plantationCurrentPage',
-      '0'
-    );
+    localStorage.setItem('plantationCurrentPage', '0');
 
     this.loadCurrentPage();
   }
 
+  
   loadCurrentPage(): void {
     const requestId = ++this.requestId;
-
     const hasFilters = this.hasActiveFilters;
 
     this.isLoading = true;
     this.errorMessage = '';
 
-    // Conserver les filtres et la page demandée.
     this.saveFilters();
 
     localStorage.setItem(
@@ -318,12 +301,18 @@ export class PlantationListComponent {
             return;
           }
 
-          this.totalElements = response.page.totalElements;
-          this.totalPages = response.page.totalPages;
-          this.currentPage = response.page.number;
-          this.pageSize = response.page.size;
+          this.totalElements =
+            response.page.totalElements;
 
-          // Enregistrer les valeurs confirmées par le backend.
+          this.totalPages =
+            response.page.totalPages;
+
+          this.currentPage =
+            response.page.number;
+
+          this.pageSize =
+            response.page.size;
+
           localStorage.setItem(
             'plantationCurrentPage',
             String(this.currentPage)
@@ -371,7 +360,10 @@ export class PlantationListComponent {
       return '';
     }
 
-    return new DatePipe('fr').transform(date, 'dd/MM/yyyy') || '';
+    return new DatePipe('fr').transform(
+      date,
+      'dd/MM/yyyy'
+    ) || '';
   }
 
   formatDateTime(date?: string | null): string {
@@ -379,7 +371,10 @@ export class PlantationListComponent {
       return '';
     }
 
-    return new DatePipe('fr').transform(date, 'dd/MM/yyyy HH:mm') || '';
+    return new DatePipe('fr').transform(
+      date,
+      'dd/MM/yyyy HH:mm'
+    ) || '';
   }
 
   formatNumber(value?: number | null): string {
@@ -387,7 +382,10 @@ export class PlantationListComponent {
       return '';
     }
 
-    return new DecimalPipe('fr').transform(value, '1.2-2') || '';
+    return new DecimalPipe('fr').transform(
+      value,
+      '1.2-2'
+    ) || '';
   }
 
   getStatusText(p?: PlantationView): string {

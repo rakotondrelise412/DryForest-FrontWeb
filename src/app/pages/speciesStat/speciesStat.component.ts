@@ -1,51 +1,182 @@
-import { Component } from '@angular/core';
+
+import { HttpErrorResponse } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
-import { Observable, of } from 'rxjs';
-import { catchError, finalize } from 'rxjs/operators';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { of } from 'rxjs';
+import { catchError, finalize, map, tap } from 'rxjs/operators';
 
 import { PlantationService } from '../../services/plantation.service';
 import { PlantationBlockSurvivalRate } from '../../models/plantation.model';
+import { PageResponse } from '../../models/page-response.model';
+import { PaginationComponent } from '../../shared/components/pagination/pagination';
 
 @Component({
   selector: 'app-survival-rate-detail',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, PaginationComponent],
   templateUrl: './speciesStat.component.html',
-  styleUrls: ['./speciesStat.component.css']
+  styleUrls: ['./speciesStat.component.css'],
 })
-export class SpeciesStatComponent {
+export class SpeciesStatComponent implements OnInit {
+  private readonly storageKey = 'speciesStatCurrentPage';
+  private readonly pageSizeStorageKey = 'speciesStatPageSize';
 
-  data$: Observable<PlantationBlockSurvivalRate[]> = of([]);
-  loading = false;
+  private readonly allowedPageSizes = [
+    5, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100,
+  ];
+
+  private requestId = 0;
+
+  data: PlantationBlockSurvivalRate[] = [];
+  isLoading = false;
   errorMessage = '';
 
-  constructor(private plantationService: PlantationService) {
+  currentPage = this.getSavedPage();
+  pageSize = this.getSavedPageSize();
+
+  totalElements = 0;
+  totalPages = 0;
+
+  constructor(
+    private readonly plantationService: PlantationService,
+    private readonly cdr: ChangeDetectorRef
+  ) {}
+
+  ngOnInit(): void {
     this.loadData();
   }
 
-  loadData(): void {
-    this.loading = true;
+  loadData(page: number = this.currentPage): void {
+    const requestedPage =
+      Number.isInteger(page) && page >= 0 ? page : 0;
+
+    const requestId = ++this.requestId;
+
+    this.currentPage = requestedPage;
+    this.isLoading = true;
     this.errorMessage = '';
 
-    this.data$ = this.plantationService.getSurvivalRateByBlockSubPlotAndSpecies().pipe(
-      finalize(() => (this.loading = false)),
-      catchError(error => {
-        console.error('Erreur chargement survival rate', error);
-        this.errorMessage = 'Impossible de charger les données de survie.';
-        return of([] as PlantationBlockSurvivalRate[]);
-      })
+    this.savePagination();
+
+    this.plantationService
+      .getSurvivalRateByBlockSubPlotAndSpecies(
+        requestedPage,
+        this.pageSize
+      )
+      .pipe(
+        tap((response: PageResponse<PlantationBlockSurvivalRate>) => {
+          if (requestId !== this.requestId) {
+            return;
+          }
+
+          this.totalElements = response.page.totalElements;
+          this.totalPages = response.page.totalPages;
+          this.pageSize = response.page.size;
+        }),
+
+        map(
+          (response: PageResponse<PlantationBlockSurvivalRate>) =>
+            response.content ?? []
+        ),
+
+        catchError((error: unknown) => {
+          if (requestId === this.requestId) {
+            this.errorMessage = this.getErrorMessage(error);
+            this.data = [];
+            this.totalElements = 0;
+            this.totalPages = 0;
+          }
+
+          return of([] as PlantationBlockSurvivalRate[]);
+        }),
+
+        finalize(() => {
+          if (requestId === this.requestId) {
+            this.isLoading = false;
+            this.cdr.detectChanges();
+          }
+        })
+      )
+      .subscribe((data) => {
+        if (requestId !== this.requestId) {
+          return;
+        }
+
+        this.data = data;
+        this.cdr.detectChanges();
+      });
+  }
+
+  changePageSize(size: number): void {
+    if (
+      this.isLoading ||
+      !this.allowedPageSizes.includes(size) ||
+      size === this.pageSize
+    ) {
+      return;
+    }
+
+    this.pageSize = size;
+    this.currentPage = 0;
+
+    this.savePagination();
+    this.loadData(0);
+  }
+
+  private getSavedPage(): number {
+    const value = localStorage.getItem(this.storageKey);
+
+    if (value === null) {
+      return 0;
+    }
+
+    const page = Number(value);
+
+    return Number.isInteger(page) && page >= 0 ? page : 0;
+  }
+
+  private getSavedPageSize(): number {
+    const value = localStorage.getItem(this.pageSizeStorageKey);
+
+    if (value === null) {
+      return 10;
+    }
+
+    const size = Number(value);
+
+    return this.allowedPageSizes.includes(size) ? size : 10;
+  }
+
+  private savePagination(): void {
+    localStorage.setItem(this.storageKey, String(this.currentPage));
+    localStorage.setItem(
+      this.pageSizeStorageKey,
+      String(this.pageSize)
     );
   }
 
-  trackByBlockId(index: number, item: PlantationBlockSurvivalRate): number | undefined {
-    return item.blockId;
-  }
+  private getErrorMessage(error: unknown): string {
+    if (!(error instanceof HttpErrorResponse)) {
+      return 'Une erreur inattendue est survenue.';
+    }
 
-  trackBySubPlotId(index: number, item: any): number | undefined {
-    return item.subPlotId;
-  }
+    switch (error.status) {
+      case 0:
+        return 'Spring Boot ne répond pas. Vérifiez que le serveur est démarré.';
 
-  trackBySpeciesId(index: number, item: any): number | undefined {
-    return item.speciesId;
+      case 401:
+      case 403:
+        return 'Accès refusé. Vérifiez votre authentification et vos autorisations.';
+
+      case 404:
+        return 'L’endpoint des statistiques de survie est introuvable.';
+
+      default:
+        return `Erreur ${error.status} : ${
+          error.error?.message ??
+          error.message ??
+          'Problème de connexion.'
+        }`;
+    }
   }
 }

@@ -1,132 +1,208 @@
-<div class="db-root">
 
-  <!-- HEADER -->
+<div class="db-root">
+  <!-- En-tête -->
   <header class="db-header">
     <div class="db-header__left">
       <span class="db-header__eyebrow">
-        <span class="live-dot"></span>Statistiques
+        <span class="live-dot"></span>
+        Statistiques
       </span>
-      <h1 class="db-header__title">Taux de survie des plantations</h1>
+
+      <h1 class="db-header__title">
+        Taux de survie des plantations
+      </h1>
+
       <p class="db-header__sub">
         Affichage des plantations classées par bloc, placette et espèce.
       </p>
     </div>
 
     <div class="db-header__meta">
-      <span class="material-icons db-header__leaf">monitor_heart</span>
+      <span class="material-icons db-header__leaf">
+        monitor_heart
+      </span>
       <span>Survie par niveau hiérarchique</span>
     </div>
   </header>
 
-  <!-- ERREUR -->
-  <div *ngIf="errorMessage" class="alert-error">
-    <span class="material-icons">error_outline</span>
-    <p>{{ errorMessage }}</p>
-  </div>
-
-  <!-- LOADING -->
-  <div *ngIf="loading" class="loading-card">
-    <div class="spinner"></div>
-    <p>Chargement des données...</p>
-  </div>
-
-  <!-- DATA -->
-  <ng-container *ngIf="data$ | async as data">
-
-    <div *ngIf="!loading && !errorMessage && data.length === 0" class="no-data-card">
-      <span class="material-icons">data_usage</span>
-      <p>Aucune donnée disponible.</p>
+  
+  <!-- Erreur -->
+  @if (errorMessage) {
+    <div class="alert-error" role="alert">
+      <span class="material-icons alert-error__icon" aria-hidden="true">
+        error_outline
+      </span>
+      <div class="alert-error__content">
+        <strong>Une erreur est survenue</strong>
+        <p>{{ errorMessage }}</p>
+      </div>
     </div>
+  }
 
-    <section class="db-section">
-      <div class="section-head">
-        <div class="section-head__left">
-          <span class="section-head__icon">
-            <span class="material-icons">forest</span>
-          </span>
-          <div>
-            <h2 class="section-head__title">Analyse détaillée</h2>
-            <p class="section-head__sub">Bloc → Placette → Espèce</p>
-          </div>
-        </div>
+  <!-- Chargement -->
+  @if (isLoading) {
+    <div class="loading-card" role="status" aria-live="polite">
+      <div class="spinner" aria-hidden="true"></div>
+
+      <div class="loading-card__content">
+        <strong>Chargement en cours</strong>
+        <p>Récupération des statistiques de survie...</p>
+      </div>
+    </div>
+  }
+
+  <!-- Aucune donnée -->
+  @if (!isLoading && !errorMessage && data.length === 0) {
+    <div class="no-data-card" role="status">
+      <div class="no-data-card__icon">
+        <span class="material-icons" aria-hidden="true">
+          inventory_2
+        </span>
       </div>
 
-      <div class="block-grid" *ngIf="!loading && data.length > 0">
-        <article class="block-card" *ngFor="let block of data; trackBy: trackByBlockId">
-          <div class="block-card__head">
-            <div class="block-card__title-wrap">
-              <span class="sc-badge sc-badge--green">Placeau</span>
-              <h3>{{ block.blockName }}</h3>
-            </div>
-            <!-- <span class="id-chip">#{{ block.blockId }}</span> -->
-          </div>
+      <h3>Aucune donnée disponible</h3>
 
-          <div class="subplot-list" *ngIf="block.subPlots?.length">
-            <section class="subplot-card" *ngFor="let subPlot of block.subPlots; trackBy: trackBySubPlotId">
-              <div class="subplot-card__head">
-                <div class="block-card__title-wrap">
-                  <span class="sc-badge sc-badge--earth">Placette</span>
-                  <h4>{{ subPlot.subPlotName }}</h4>
-                </div>
-                <!-- <span class="id-chip id-chip--earth">#{{ subPlot.subPlotId }}</span> -->
+      <p>
+        Les statistiques de survie des plantations
+        ne sont pas disponibles pour le moment.
+      </p>
+    </div>
+  }
+
+
+  <!-- Analyse détaillée -->
+  <section class="db-section">
+    <div class="section-head">
+      <div class="section-head__left">
+        <span class="section-head__icon">
+          <span class="material-icons">forest</span>
+        </span>
+
+        <div>
+          <h2 class="section-head__title">
+            Analyse détaillée
+          </h2>
+          <p class="section-head__sub">
+            Bloc → Placette → Espèce
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Blocs -->
+    @if (!isLoading && !errorMessage && data.length > 0) {
+      <div class="block-grid">
+      
+        @for (block of data; track block.blockId) {
+          <article class="block-card">
+            <div class="block-card__head">
+              <div class="block-card__title-wrap">
+                <span class="sc-badge sc-badge--green">
+                  Placeau
+                </span>
+                <h3>{{ block.blockName }}</h3>
               </div>
+            </div>
 
-              <div class="species-grid" *ngIf="subPlot.speciesStats?.length">
-                <article class="species-card" *ngFor="let species of subPlot.speciesStats; trackBy: trackBySpeciesId">
-                  <div class="species-card__head">
-                    <div>
-                      <span class="species-label">Espèce</span>
-                      <strong>{{ species.speciesName }}</strong>
-                    </div>
-                    <!-- <span class="species-id">#{{ species.speciesId }}</span> -->
-                  </div>
-
-                  <div class="stats-grid">
-                    <div class="stat-box alive">
-                      <span>Vivants</span>
-                      <strong>{{ species.aliveCount }}</strong>
-                    </div>
-                    <div class="stat-box dead">
-                      <span>Morts</span>
-                      <strong>{{ species.deadCount }}</strong>
-                    </div>
-                    <div class="stat-box total">
-                      <span>Total</span>
-                      <strong>{{ species.totalCount }}</strong>
-                    </div>
-                  </div>
-
-                  <div class="rate-area">
-                    <div class="rate-area__head">
-                      <span>Taux de survie</span>
-                      <strong>{{ species.aliveRate | number:'1.0-2' }}%</strong>
-                    </div>
-
-                    <div class="progress-track">
-                      <div
-                        class="progress-fill"
-                        [style.width.%]="species.aliveRate || 0">
+            <!-- Placettes -->
+            @if (block.subPlots?.length) {
+              <div class="subplot-list">
+                @for (subPlot of block.subPlots; track subPlot.subPlotId) {
+                  <section class="subplot-card">
+                    <div class="subplot-card__head">
+                      <div class="block-card__title-wrap">
+                        <span class="sc-badge sc-badge--earth">
+                          Placette
+                        </span>
+                        <h4>{{ subPlot.subPlotName }}</h4>
                       </div>
                     </div>
 
-                    <div class="rate-area__foot">
-                      Taux de mortalité : {{ species.deadRate | number:'1.0-2' }}%
-                    </div>
-                  </div>
-                </article>
-              </div>
+                    <!-- Espèces -->
+                    @if (subPlot.speciesStats?.length) {
+                      <div class="species-grid">
+                        @for (species of subPlot.speciesStats; track species.speciesId) {
+                          <article class="species-card">
+                            <div class="species-card__head">
+                              <div>
+                                <span class="species-label">
+                                  Espèce
+                                </span>
+                                <strong>{{ species.speciesName }}</strong>
+                              </div>
+                            </div>
 
-              <div class="no-data-inline" *ngIf="!subPlot.speciesStats?.length">
-                Aucune espèce trouvée dans cette placette.
-              </div>
-            </section>
-          </div>
+                            <!-- Effectifs -->
+                            <div class="stats-grid">
+                              <div class="stat-box alive">
+                                <span>Vivants</span>
+                                <strong>{{ species.aliveCount }}</strong>
+                              </div>
 
-          <div class="no-data-inline" *ngIf="!block.subPlots?.length">
-            Aucune placette trouvée dans ce bloc.
-          </div>
-        </article>
+                              <div class="stat-box dead">
+                                <span>Morts</span>
+                                <strong>{{ species.deadCount }}</strong>
+                              </div>
+
+                              <div class="stat-box total">
+                                <span>Total</span>
+                                <strong>{{ species.totalCount }}</strong>
+                              </div>
+                            </div>
+
+                            <!-- Taux de survie -->
+                            <div class="rate-area">
+                              <div class="rate-area__head">
+                                <span>Taux de survie</span>
+                                <strong>
+                                  {{ species.aliveRate | number: '1.0-2' }}%
+                                </strong>
+                              </div>
+
+                              <div class="progress-track">
+                                <div
+                                  class="progress-fill"
+                                  [style.width.%]="species.aliveRate || 0"
+                                ></div>
+                              </div>
+
+                              <div class="rate-area__foot">
+                                Taux de mortalité :
+                                {{ species.deadRate | number: '1.0-2' }}%
+                              </div>
+                            </div>
+                          </article>
+                        }
+                      </div>
+                    } @else {
+                      <div class="no-data-inline">
+                        Aucune espèce trouvée dans cette placette.
+                      </div>
+                    }
+                  </section>
+                }
+              </div>
+            } @else {
+              <div class="no-data-inline">
+                Aucune placette trouvée dans ce bloc.
+              </div>
+            }
+          </article>
+        }
       </div>
-    </section>
-  </ng-container>
+    }
+  </section>
+
+  <!-- Pagination -->
+  @if (totalElements > 0) {
+    <app-pagination
+      [currentPage]="currentPage"
+      [totalPages]="totalPages"
+      [totalElements]="totalElements"
+      [pageSize]="pageSize"
+      [isLoading]="isLoading"
+      (pageChange)="loadData($event)"
+      (pageSizeChange)="changePageSize($event)"
+    />
+  }
 </div>
