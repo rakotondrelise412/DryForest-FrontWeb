@@ -27,6 +27,7 @@ import { PaginationComponent } from '../../shared/components/pagination/paginati
   styleUrls: ['./plantation.component.css']
 })
 export class PlantationListComponent {
+
   plantations$: Observable<PlantationView[]> = of([]);
   plantationBlock$: Observable<PlantationBlock[]> = of([]);
   speciesFilter$: Observable<SpeciesFilter[]> = of([]);
@@ -71,7 +72,10 @@ export class PlantationListComponent {
     this.loadSubPlotFilter();
   }
 
-  
+  // =========================================================
+  // RESTAURATION DES VALEURS SAUVEGARDÉES
+  // =========================================================
+
   private getSavedPage(): number {
     const page = Number(
       localStorage.getItem('plantationCurrentPage')
@@ -80,7 +84,6 @@ export class PlantationListComponent {
     return Number.isInteger(page) && page >= 0 ? page : 0;
   }
 
-  
   private getSavedPageSize(): number {
     const size = Number(
       localStorage.getItem('plantationPageSize')
@@ -93,7 +96,6 @@ export class PlantationListComponent {
     return allowedSizes.includes(size) ? size : 10;
   }
 
-  
   private getSavedNumberFilter(key: string): number | null {
     const savedValue = localStorage.getItem(key);
 
@@ -106,7 +108,6 @@ export class PlantationListComponent {
     return Number.isFinite(value) ? value : null;
   }
 
- 
   private saveFilters(): void {
     this.saveNumberFilter(
       'plantationSelectedBlockId',
@@ -144,20 +145,35 @@ export class PlantationListComponent {
     }
   }
 
+  // =========================================================
+  // CHARGEMENT DES PLANTATIONS
+  // =========================================================
 
   loadPlantations(page: number = this.currentPage): void {
     this.currentPage = page;
     this.loadCurrentPage();
   }
 
- 
+  // =========================================================
+  // CHARGEMENT DES PLANTATION BLOCKS
+  // Adaptation à PageResponse<PlantationBlock>
+  // =========================================================
+
   loadPlantationBlock(): void {
     this.plantationBlock$ = this.plantationBlockService
-      .getAllPlantationBlocks()
+      .getAllPlantationBlocks(0, 100)
       .pipe(
-        catchError(() => of([] as PlantationBlock[]))
+        map(response => response?.content ?? []),
+        catchError(error => {
+          console.error('Erreur chargement plantation blocks', error);
+          return of([] as PlantationBlock[]);
+        })
       );
   }
+
+  // =========================================================
+  // FILTRES
+  // =========================================================
 
   get hasActiveFilters(): boolean {
     return (
@@ -168,7 +184,6 @@ export class PlantationListComponent {
     );
   }
 
- 
   clearFilters(): void {
     if (this.isLoading || !this.hasActiveFilters) {
       return;
@@ -188,43 +203,57 @@ export class PlantationListComponent {
     this.loadCurrentPage();
   }
 
- 
+  // =========================================================
+  // FILTRE DES ESPÈCES
+  // =========================================================
+
   loadSpeciesFilter(): void {
     this.speciesFilter$ = this.speciesService
       .getAllSpeciesFilter(0, 100)
       .pipe(
-        map((response) => {
+        map(response => {
           const list = response?.content ?? [];
 
-          return list.map((species) => ({
+          return list.map(species => ({
             ...species,
             id_species:
               species.id ??
               species.id_species ??
-              species.id_species ??
               null
           }) as SpeciesFilter);
         }),
-        catchError(() => of([] as SpeciesFilter[]))
+        catchError(error => {
+          console.error('Erreur chargement espèces', error);
+          return of([] as SpeciesFilter[]);
+        })
       );
   }
 
   onSpeciesChange(value: any): void {
+    // La recherche est déclenchée par search().
   }
+
+  // =========================================================
+  // FILTRE DES PLACETTES
+  // Adaptation à PageResponse<SubPlotWebFilter>
+  // =========================================================
 
   loadSubPlotFilter(): void {
     this.subPlotFilter$ = this.subPlotService
-      .getAllSubPlotWebFilter()
+      .getAllSubPlotWebFilter(0, 100)
       .pipe(
-        catchError(() => of([] as SubPlotWebFilter[]))
+        map(response => response?.content ?? []),
+        catchError(error => {
+          console.error('Erreur chargement placettes', error);
+          return of([] as SubPlotWebFilter[]);
+        })
       );
   }
 
-  trackById(_: number, item: PlantationView): any {
-    return item?.idPlantation ?? _;
-  }
+  // =========================================================
+  // RECHERCHE
+  // =========================================================
 
- 
   search(): void {
     this.currentPage = 0;
 
@@ -234,11 +263,15 @@ export class PlantationListComponent {
     this.loadCurrentPage();
   }
 
-  
+  // =========================================================
+  // CHANGEMENT DE TAILLE DE PAGE
+  // =========================================================
+
   changePageSize(size: number): void {
     if (
       this.isLoading ||
       size <= 0 ||
+      size > 100 ||
       size === this.pageSize
     ) {
       return;
@@ -257,7 +290,10 @@ export class PlantationListComponent {
     this.loadCurrentPage();
   }
 
-  
+  // =========================================================
+  // CHARGEMENT DE LA PAGE COURANTE
+  // =========================================================
+
   loadCurrentPage(): void {
     const requestId = ++this.requestId;
     const hasFilters = this.hasActiveFilters;
@@ -296,22 +332,15 @@ export class PlantationListComponent {
         })
       )
       .subscribe({
-        next: (response) => {
+        next: response => {
           if (requestId !== this.requestId) {
             return;
           }
 
-          this.totalElements =
-            response.page.totalElements;
-
-          this.totalPages =
-            response.page.totalPages;
-
-          this.currentPage =
-            response.page.number;
-
-          this.pageSize =
-            response.page.size;
+          this.totalElements = response.page.totalElements;
+          this.totalPages = response.page.totalPages;
+          this.currentPage = response.page.number;
+          this.pageSize = response.page.size;
 
           localStorage.setItem(
             'plantationCurrentPage',
@@ -326,16 +355,22 @@ export class PlantationListComponent {
           this.plantations$ = of(response.content ?? []);
         },
 
-        error: (error) => {
+        error: error => {
           if (requestId !== this.requestId) {
             return;
           }
 
           this.errorMessage = this.getErrorMessage(error);
           this.plantations$ = of([]);
+          this.totalElements = 0;
+          this.totalPages = 0;
         }
       });
   }
+
+  // =========================================================
+  // GESTION DES ERREURS
+  // =========================================================
 
   private getErrorMessage(error: any): string {
     if (!error) {
@@ -354,6 +389,10 @@ export class PlantationListComponent {
       error.message || 'Problème de connexion'
     }`;
   }
+
+  // =========================================================
+  // FORMATAGE
+  // =========================================================
 
   formatDate(date?: string | null): string {
     if (!date) {
@@ -398,5 +437,13 @@ export class PlantationListComponent {
     }
 
     return p.plantationStatus ? 'Vivante' : 'Morte';
+  }
+
+  // =========================================================
+  // TRACKBY
+  // =========================================================
+
+  trackById(_: number, item: PlantationView): any {
+    return item?.idPlantation ?? _;
   }
 }

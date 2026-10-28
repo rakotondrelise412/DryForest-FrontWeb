@@ -31,8 +31,8 @@ export class SpeciesStatComponent implements OnInit {
   isLoading = false;
   errorMessage = '';
 
-  currentPage = this.getSavedPage();
-  pageSize = this.getSavedPageSize();
+  currentPage = 0;
+  pageSize = 10;
 
   totalElements = 0;
   totalPages = 0;
@@ -43,8 +43,14 @@ export class SpeciesStatComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.loadData();
-  }
+  this.currentPage = 0;
+  this.pageSize = 10;
+
+  localStorage.setItem(this.storageKey, '0');
+  localStorage.setItem(this.pageSizeStorageKey, '10');
+
+  this.loadData(0);
+}
 
   loadData(page: number = this.currentPage): void {
     const requestedPage =
@@ -123,30 +129,7 @@ export class SpeciesStatComponent implements OnInit {
     this.loadData(0);
   }
 
-  private getSavedPage(): number {
-    const value = localStorage.getItem(this.storageKey);
-
-    if (value === null) {
-      return 0;
-    }
-
-    const page = Number(value);
-
-    return Number.isInteger(page) && page >= 0 ? page : 0;
-  }
-
-  private getSavedPageSize(): number {
-    const value = localStorage.getItem(this.pageSizeStorageKey);
-
-    if (value === null) {
-      return 10;
-    }
-
-    const size = Number(value);
-
-    return this.allowedPageSizes.includes(size) ? size : 10;
-  }
-
+  
   private savePagination(): void {
     localStorage.setItem(this.storageKey, String(this.currentPage));
     localStorage.setItem(

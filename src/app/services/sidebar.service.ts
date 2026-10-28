@@ -10,7 +10,6 @@ export class SidebarService {
   isCollapsed$ = this.isCollapsedSubject.asObservable();
 
   constructor() {
-    // Vérifier la préférence utilisateur dans localStorage
     const savedState = localStorage.getItem('sidebarCollapsed');
     if (savedState) {
       this.isCollapsedSubject.next(savedState === 'true');

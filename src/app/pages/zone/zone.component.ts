@@ -1,21 +1,43 @@
-// src/app/pages/zone/zone.component.ts
-import { Component, OnInit, OnDestroy, AfterViewInit, ChangeDetectorRef } from '@angular/core';
+
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  AfterViewInit,
+  ChangeDetectorRef
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import * as L from 'leaflet';
 import 'leaflet-defaulticon-compatibility';
-import { Observable, Subscription, forkJoin, of } from 'rxjs';
-import { catchError, finalize, tap } from 'rxjs/operators';
+
+import {
+  Observable,
+  Subscription,
+  forkJoin,
+  of,
+  EMPTY
+} from 'rxjs';
+
+import {
+  catchError,
+  expand,
+  finalize,
+  reduce
+} from 'rxjs/operators';
 
 import { ZoneService } from '../../services/zone.service';
 import { PlantationBlockService } from '../../services/plantationBlock.service';
 import { SubPlotService } from '../../services/subPlot.service';
-
-import { ZoneWeb } from '../../models/zone.model';
-import { PlantationBlocks } from '../../models/plantationBlock.model';
-import { SubPlot } from '../../models/subPlotWebFilter.model';
-import { CountByType } from '../../models/countByType.model';
 import { IncidentPatrolService } from '../../services/incidentPatrol.service';
 import { ObservationService } from '../../services/observationPatrol.service';
+
+import { ZoneWeb } from '../../models/zone.model';
+import {
+  PlantationBlocks
+} from '../../models/plantationBlock.model';
+import { SubPlot } from '../../models/subPlotWebFilter.model';
+import { CountByType } from '../../models/countByType.model';
+import { PageResponse } from '../../models/page-response.model';
 
 @Component({
   selector: 'app-zone-list',
@@ -24,23 +46,33 @@ import { ObservationService } from '../../services/observationPatrol.service';
   templateUrl: './zone.component.html',
   styleUrls: ['./zone.component.css']
 })
-export class ZoneComponent implements OnInit, AfterViewInit, OnDestroy {
+export class ZoneComponent
+  implements OnInit, AfterViewInit, OnDestroy {
+
   private map?: L.Map;
   private layerGroup?: L.FeatureGroup;
   private sub?: Subscription;
 
+  // Données complètes utilisées par la carte et les listes
   zones: ZoneWeb[] = [];
   plantationBlocks: PlantationBlocks[] = [];
   subPlots: SubPlot[] = [];
 
+  // Pagination API : le backend accepte des tailles jusqu'à 100
+  private readonly pageSize = 100;
+
+  // Statistiques existantes
   totalAreaProtected$: Observable<number> = of(0);
   incidentPatCountByType$: Observable<CountByType[]> = of([]);
   observationPatCountByType$: Observable<CountByType[]> = of([]);
 
+  // États de chargement
   isLoading = true;
   isTotalAreaProtectedLoading = true;
   isIncidentPatCountByTypeLoading = true;
   isObservationPatCountByTypeLoading = true;
+
+  // Messages d'erreur
   errorMessage = '';
   totalAreaProtectedErrorMessage = '';
   errorIncidentPatCountByTypeMessage = '';
@@ -66,9 +98,16 @@ export class ZoneComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    if (this.sub) this.sub.unsubscribe();
-    if (this.map) this.map.remove();
+    this.sub?.unsubscribe();
+
+    if (this.map) {
+      this.map.remove();
+    }
   }
+
+  // =========================================================
+  // CARTE LEAFLET
+  // =========================================================
 
   private initMap(): void {
     this.map = L.map('zoneMap', {
@@ -76,155 +115,280 @@ export class ZoneComponent implements OnInit, AfterViewInit, OnDestroy {
       zoom: 6
     });
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19,
-      attribution: '© OpenStreetMap'
-    }).addTo(this.map);
+    L.tileLayer(
+      'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+      {
+        maxZoom: 19,
+        attribution: '© OpenStreetMap'
+      }
+    ).addTo(this.map);
 
     this.layerGroup = L.featureGroup().addTo(this.map);
   }
 
- 
-private loadAllData(): void {
-  this.isLoading = true;
-  this.errorMessage = '';
+  // =========================================================
+  // PAGINATION : CHARGER TOUTES LES PAGES
+  // =========================================================
 
-  this.sub = forkJoin({
-    zones: this.zoneService.getZoneWeb(0, 10).pipe(
-      catchError(error => {
-        console.error('Erreur chargement zones', error);
-        this.errorMessage = this.getErrorMessage(error);
-        return of(null);
-      })
-    ),
+  private loadAllPages<T>(
+    fetchPage: (
+      page: number,
+      size: number
+    ) => Observable<PageResponse<T>>
+  ): Observable<T[]> {
 
-    blocks: this.plantationBlockService.getAll().pipe(
-      catchError(error => {
-        console.error('Erreur chargement plantation_block', error);
-        return of([] as PlantationBlocks[]);
-      })
-    ),
+    return fetchPage(0, this.pageSize).pipe(
+      expand(response => {
+        const currentPage = response.page.number;
+        const totalPages = response.page.totalPages;
+        const nextPage = currentPage + 1;
 
-    subPlots: this.subPlotService.getAllSubPlot().pipe(
-      catchError(error => {
-        console.error('Erreur chargement sub_plot', error);
-        return of([] as SubPlot[]);
-      })
-    )
-  }).subscribe({
-    next: ({ zones, blocks, subPlots }) => {
-      this.zones = zones?.content ?? [];
-      this.plantationBlocks = blocks ?? [];
-      this.subPlots = subPlots ?? [];
+        if (nextPage < totalPages) {
+          return fetchPage(nextPage, this.pageSize);
+        }
 
-      console.debug('[Carte] Zones reçues :', this.zones.length);
-      console.debug('[Carte] Blocs reçus :', this.plantationBlocks.length);
-      console.debug('[Carte] Placettes reçues :', this.subPlots.length);
-
-      this.drawAll();
-      this.isLoading = false;
-      this.cdr.detectChanges();
-    },
-
-    error: error => {
-      console.error('Erreur chargement carte', error);
-      this.errorMessage = this.getErrorMessage(error);
-      this.isLoading = false;
-      this.cdr.detectChanges();
-    }
-  });
-}
-
-
-
-loadTotalAreaProtected(): void {
-  this.isTotalAreaProtectedLoading = true;
-  this.totalAreaProtectedErrorMessage = '';
-
-  this.totalAreaProtected$ = this.zoneService
-    .getTotalAreaProtected()
-    .pipe(
-      catchError(error => {
-        console.error('Erreur surface protégée', error);
-        this.totalAreaProtectedErrorMessage =
-          "Impossible de charger la surface protégée.";
-
-        return of(0);
+        return EMPTY;
       }),
-      finalize(() => {
-        this.isTotalAreaProtectedLoading = false;
-      })
+
+      reduce(
+        (items: T[], response: PageResponse<T>) => {
+          items.push(...(response.content ?? []));
+          return items;
+        },
+        [] as T[]
+      )
     );
-}
-  
+  }
+
+  // =========================================================
+  // CHARGEMENT DES ZONES, BLOCS ET PLACETTES
+  // =========================================================
+
+  private loadAllData(): void {
+    this.isLoading = true;
+    this.errorMessage = '';
+
+    this.sub = forkJoin({
+      // Toutes les zones
+      zones: this.loadAllPages<ZoneWeb>(
+        (page, size) =>
+          this.zoneService.getZoneWeb(page, size)
+      ).pipe(
+        catchError(error => {
+          console.error('Erreur chargement zones', error);
+          this.errorMessage = this.getErrorMessage(error);
+          return of([] as ZoneWeb[]);
+        })
+      ),
+
+      // Tous les plantation blocks
+      blocks: this.loadAllPages<PlantationBlocks>(
+        (page, size) =>
+          this.plantationBlockService.getAll(page, size)
+      ).pipe(
+        catchError(error => {
+          console.error(
+            'Erreur chargement plantation_block',
+            error
+          );
+          return of([] as PlantationBlocks[]);
+        })
+      ),
+
+      // Toutes les sous-parcelles
+      subPlots: this.loadAllPages<SubPlot>(
+        (page, size) =>
+          this.subPlotService.getAllSubPlot(page, size)
+      ).pipe(
+        catchError(error => {
+          console.error('Erreur chargement sub_plot', error);
+          return of([] as SubPlot[]);
+        })
+      )
+    }).subscribe({
+      next: ({ zones, blocks, subPlots }) => {
+        this.zones = zones;
+        this.plantationBlocks = blocks;
+        this.subPlots = subPlots;
+
+        console.debug(
+          '[Carte] Zones reçues :',
+          this.zones.length
+        );
+
+        console.debug(
+          '[Carte] Blocs reçus :',
+          this.plantationBlocks.length
+        );
+
+        console.debug(
+          '[Carte] Placettes reçues :',
+          this.subPlots.length
+        );
+
+        // Redessiner la carte avec toutes les données
+        this.drawAll();
+
+        this.isLoading = false;
+        this.cdr.detectChanges();
+      },
+
+      error: error => {
+        console.error('Erreur chargement carte', error);
+
+        this.errorMessage = this.getErrorMessage(error);
+        this.isLoading = false;
+
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  // =========================================================
+  // SURFACE TOTALE PROTÉGÉE
+  // =========================================================
+
+  loadTotalAreaProtected(): void {
+    this.isTotalAreaProtectedLoading = true;
+    this.totalAreaProtectedErrorMessage = '';
+
+    this.totalAreaProtected$ = this.zoneService
+      .getTotalAreaProtected()
+      .pipe(
+        catchError(error => {
+          console.error('Erreur surface protégée', error);
+
+          this.totalAreaProtectedErrorMessage =
+            'Impossible de charger la surface protégée.';
+
+          return of(0);
+        }),
+
+        finalize(() => {
+          this.isTotalAreaProtectedLoading = false;
+        })
+      );
+  }
+
+  // =========================================================
+  // STATISTIQUES DES INCIDENTS
+  // =========================================================
 
   loadIncidentPatCountByType(): void {
     this.isIncidentPatCountByTypeLoading = true;
     this.errorIncidentPatCountByTypeMessage = '';
-    this.incidentPatCountByType$ = this.incidentPatrolService.getIncidentPatCountByType().pipe(
-      catchError(err => {
-        this.errorIncidentPatCountByTypeMessage = this.getErrorMessage(err);
-        return of([] as CountByType[]);
-      }),
-      finalize(() => {
-        this.isIncidentPatCountByTypeLoading = false;
-      })
-    )
+
+    this.incidentPatCountByType$ =
+      this.incidentPatrolService
+        .getIncidentPatCountByType()
+        .pipe(
+          catchError(error => {
+            this.errorIncidentPatCountByTypeMessage =
+              this.getErrorMessage(error);
+
+            return of([] as CountByType[]);
+          }),
+
+          finalize(() => {
+            this.isIncidentPatCountByTypeLoading = false;
+          })
+        );
   }
+
+  // =========================================================
+  // STATISTIQUES DES OBSERVATIONS
+  // =========================================================
 
   loadObservationPatCountByType(): void {
     this.isObservationPatCountByTypeLoading = true;
     this.errorObservationPatCountByTypeMessage = '';
-    this.observationPatCountByType$ = this.observationPatrolService.getObservationPatCountByType().pipe(
-      catchError(err => {
-        this.errorObservationPatCountByTypeMessage = this.getErrorMessage(err);
-        return of([] as CountByType[]);
-      }),
-      finalize(() => {
-        this.isObservationPatCountByTypeLoading = false;
-      })
-    )
+
+    this.observationPatCountByType$ =
+      this.observationPatrolService
+        .getObservationPatCountByType()
+        .pipe(
+          catchError(error => {
+            this.errorObservationPatCountByTypeMessage =
+              this.getErrorMessage(error);
+
+            return of([] as CountByType[]);
+          }),
+
+          finalize(() => {
+            this.isObservationPatCountByTypeLoading = false;
+          })
+        );
   }
 
+  // =========================================================
+  // DESSIN DES ZONES, BLOCS ET PLACETTES
+  // =========================================================
+
   private drawAll(): void {
-    if (!this.map || !this.layerGroup) return;
+    if (!this.map || !this.layerGroup) {
+      return;
+    }
 
     this.layerGroup.clearLayers();
 
+    // Zones
     for (const z of this.zones) {
-      if (!z?.geom?.coordinates) continue;
+      if (!z?.geom?.coordinates) {
+        continue;
+      }
 
       try {
         if (z.geom.type === 'Polygon') {
-          const latlngRings = this.polygonCoordsToLatLngs(z.geom.coordinates);
+          const latlngRings =
+            this.polygonCoordsToLatLngs(z.geom.coordinates);
+
           const poly = L.polygon(latlngRings, {
             color: '#955138',
             weight: 2,
             fillOpacity: 0.18
           }).addTo(this.layerGroup);
 
-          this.decoratePolygon(poly, z.name, `Area: ${z.area?.toLocaleString() ?? '—'}`, 'zone');
+          this.decoratePolygon(
+            poly,
+            z.name,
+            `Area: ${z.area?.toLocaleString() ?? '—'}`,
+            'zone'
+          );
         } else if (z.geom.type === 'MultiPolygon') {
-          const multi = (z.geom.coordinates as any[]).map(polyCoords => this.polygonCoordsToLatLngs(polyCoords));
+          const multi = (z.geom.coordinates as any[])
+            .map(polyCoords =>
+              this.polygonCoordsToLatLngs(polyCoords)
+            );
+
           const poly = L.polygon(multi as any, {
             color: '#955138',
             weight: 2,
             fillOpacity: 0.18
           }).addTo(this.layerGroup);
 
-          this.decoratePolygon(poly, z.name, `Area: ${z.area?.toLocaleString() ?? '—'}`, 'zone');
+          this.decoratePolygon(
+            poly,
+            z.name,
+            `Area: ${z.area?.toLocaleString() ?? '—'}`,
+            'zone'
+          );
         }
-      } catch (e) {
-        console.error('Erreur dessin zone', z.id_zone, e);
+      } catch (error) {
+        console.error('Erreur dessin zone', z.id_zone, error);
       }
     }
 
+    // Plantation blocks
     for (const b of this.plantationBlocks) {
-      if (!b?.geom?.coordinates) continue;
+      if (!b?.geom?.coordinates) {
+        continue;
+      }
 
       try {
         if (b.geom.type === 'Polygon') {
-          const latlngRings = this.polygonCoordsToLatLngs(b.geom.coordinates);
+          const latlngRings =
+            this.polygonCoordsToLatLngs(b.geom.coordinates);
+
           const poly = L.polygon(latlngRings, {
             color: '#1d4ed8',
             weight: 2,
@@ -232,9 +396,18 @@ loadTotalAreaProtected(): void {
             fillOpacity: 0.12
           }).addTo(this.layerGroup);
 
-          this.decoratePolygon(poly, b.name, `Sous-parcelles: ${b.nb_sub_plot ?? '—'}`, 'block');
+          this.decoratePolygon(
+            poly,
+            b.name,
+            `Sous-parcelles: ${b.nb_sub_plot ?? '—'}`,
+            'block'
+          );
         } else if (b.geom.type === 'MultiPolygon') {
-          const multi = (b.geom.coordinates as any[]).map(polyCoords => this.polygonCoordsToLatLngs(polyCoords));
+          const multi = (b.geom.coordinates as any[])
+            .map(polyCoords =>
+              this.polygonCoordsToLatLngs(polyCoords)
+            );
+
           const poly = L.polygon(multi as any, {
             color: '#1d4ed8',
             weight: 2,
@@ -242,24 +415,40 @@ loadTotalAreaProtected(): void {
             fillOpacity: 0.12
           }).addTo(this.layerGroup);
 
-          this.decoratePolygon(poly, b.name, `Sous-parcelles: ${b.nb_sub_plot ?? '—'}`, 'block');
+          this.decoratePolygon(
+            poly,
+            b.name,
+            `Sous-parcelles: ${b.nb_sub_plot ?? '—'}`,
+            'block'
+          );
         }
-      } catch (e) {
-        console.error('Erreur dessin plantation_block', b.id_plantation_block, e);
+      } catch (error) {
+        console.error(
+          'Erreur dessin plantation_block',
+          b.id_plantation_block,
+          error
+        );
       }
     }
 
+    // Placettes
     for (const sp of this.subPlots) {
-      if (!sp?.location?.coordinates) continue;
+      if (!sp?.location?.coordinates) {
+        continue;
+      }
 
       try {
-        const markerPosition = this.pointCoordsToLatLng(sp.location.coordinates);
-        if (!markerPosition) continue;
+        const markerPosition =
+          this.pointCoordsToLatLng(sp.location.coordinates);
+
+        if (!markerPosition) {
+          continue;
+        }
 
         const marker = L.marker(markerPosition, {
           icon: L.divIcon({
             className: 'subplot-pin',
-            html: `<div class="subplot-pin-dot"></div>`,
+            html: '<div class="subplot-pin-dot"></div>',
             iconSize: [18, 18],
             iconAnchor: [9, 9]
           })
@@ -277,36 +466,67 @@ loadTotalAreaProtected(): void {
           offset: [0, -10],
           className: 'subplot-label'
         });
-      } catch (e) {
-        console.error('Erreur dessin sub_plot', sp.id_sub_plot, e);
+      } catch (error) {
+        console.error('Erreur dessin sub_plot', sp.id_sub_plot, error);
       }
     }
 
+    // Adapter le cadrage à toutes les données dessinées
     if (this.layerGroup.getLayers().length > 0) {
-      this.map.fitBounds(this.layerGroup.getBounds(), { padding: [20, 20] });
+      this.map.fitBounds(
+        this.layerGroup.getBounds(),
+        { padding: [20, 20] }
+      );
     }
   }
 
-  private polygonCoordsToLatLngs(polygonCoords: any): L.LatLngExpression[][] {
+  // =========================================================
+  // CONVERSION DES COORDONNÉES GÉOGRAPHIQUES
+  // =========================================================
+
+  private polygonCoordsToLatLngs(
+    polygonCoords: any
+  ): L.LatLngExpression[][] {
     return polygonCoords.map((ring: number[][]) =>
       ring.map(coord => {
         const lng = Number(coord[0]);
         const lat = Number(coord[1]);
+
         return [lat, lng] as L.LatLngExpression;
       })
     );
   }
 
-  private pointCoordsToLatLng(coords: any): L.LatLngExpression | null {
-    if (!Array.isArray(coords) || coords.length < 2) return null;
+  private pointCoordsToLatLng(
+    coords: any
+  ): L.LatLngExpression | null {
+    if (!Array.isArray(coords) || coords.length < 2) {
+      return null;
+    }
+
     const lng = Number(coords[0]);
     const lat = Number(coords[1]);
-    if (Number.isNaN(lat) || Number.isNaN(lng)) return null;
+
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+      return null;
+    }
+
     return [lat, lng];
   }
 
-  private decoratePolygon(layer: L.Layer, name: string, extraText: string, kind: 'zone' | 'block'): void {
-    if (!(layer instanceof L.Polygon)) return;
+  // =========================================================
+  // POPUPS ET ÉTIQUETTES
+  // =========================================================
+
+  private decoratePolygon(
+    layer: L.Layer,
+    name: string,
+    extraText: string,
+    kind: 'zone' | 'block'
+  ): void {
+    if (!(layer instanceof L.Polygon)) {
+      return;
+    }
 
     const poly = layer as L.Polygon;
     const center = poly.getBounds().getCenter();
@@ -314,16 +534,23 @@ loadTotalAreaProtected(): void {
     poly.bindPopup(`<strong>${name}</strong><br/>${extraText}`);
 
     const marker = L.marker(center).addTo(this.layerGroup!);
+
     marker.bindPopup(`<strong>${name}</strong>`);
+
     marker.bindTooltip(name, {
       permanent: true,
       direction: 'top',
       offset: [0, -10],
-      className: kind === 'zone' ? 'zone-label' : 'block-label'
+      className:
+        kind === 'zone' ? 'zone-label' : 'block-label'
     });
 
     marker.on('click', () => poly.openPopup());
   }
+
+  // =========================================================
+  // GESTION DES ERREURS
+  // =========================================================
 
   private getErrorMessage(error: any): string {
     if (!error) {
@@ -338,18 +565,24 @@ loadTotalAreaProtected(): void {
       return 'Erreur CORS / autorisation. Vérifiez la configuration du backend.';
     }
 
-    return `Erreur ${error.status || 'inconnue'} : ${error.message || 'Problème de connexion'}`;
+    return `Erreur ${error.status || 'inconnue'} : ${
+      error.message || 'Problème de connexion'
+    }`;
   }
 
-  trackByZone(_: number, z: ZoneWeb) {
+  // =========================================================
+  // TRACKBY POUR LES LISTES ANGULAR
+  // =========================================================
+
+  trackByZone(_: number, z: ZoneWeb): number {
     return z.id_zone;
   }
 
-  trackByBlock(_: number, b: PlantationBlocks) {
+  trackByBlock(_: number, b: PlantationBlocks): number {
     return b.id_plantation_block;
   }
 
-  trackBySubPlot(_: number, sp: SubPlot) {
+  trackBySubPlot(_: number, sp: SubPlot): number {
     return sp.id_sub_plot;
   }
 }

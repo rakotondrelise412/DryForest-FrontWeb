@@ -7,7 +7,7 @@ import { ApiService } from '../core/services/api.service';
   providedIn: 'root',
 })
 export class PersonService {
-  private endpoint = 'api/persons';
+  private readonly endpoint = 'api/persons';
 
   constructor(private apiService: ApiService) {}
 

@@ -9,8 +9,8 @@ import { PageResponse } from '../models/page-response.model';
   providedIn: 'root'
 })
 export class ZoneService {
-  private endpoint = 'api/zone';
-  private areaProtected = `${this.endpoint}/totalAreaProtected`;
+  private readonly endpoint = 'api/zone';
+  private readonly areaProtected = `${this.endpoint}/totalAreaProtected`;
 
   constructor(private apiService: ApiService) {}
 

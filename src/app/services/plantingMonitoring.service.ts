@@ -10,11 +10,11 @@ import { PageResponse } from '../models/page-response.model';
   providedIn: 'root'
 })
 export class PlantingMonitoringService {
-  private api = 'api/planting_monitoring';
+  private readonly api = 'api/planting_monitoring';
 
-  private speciesStatistic = `${this.api}/speciesStat`;
+  private readonly speciesStatistic = `${this.api}/speciesStat`;
 
-  private speciesStatByDate =
+  private readonly speciesStatByDate =
     `${this.api}/species/statistics/by-reforestation-date`;
 
   constructor(private apiService: ApiService) {}

@@ -8,9 +8,12 @@ import { Observable } from "rxjs";
   providedIn: 'root'
 })
 export class ReforestationService{
-  private endPoint = 'api/reforestation/ref_quantity_by_type_zone';
-  private totalLastPlanted = 'api/reforestation/total_planted';
-  private latestPlanted = 'api/reforestation/total_last_planted';
+
+  private readonly api = 'api/reforestation';
+  private readonly endPoint = `${this.api}/ref_quantity_by_type_zone`;
+  private readonly totalLastPlanted = `${this.api}/total_planted`;
+  private readonly latestPlanted = `${this.api}/total_last_planted`;
+
 
   constructor(private apiService: ApiService) {}
 
