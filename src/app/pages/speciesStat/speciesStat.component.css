@@ -422,18 +422,31 @@
   margin-top: 16px;
 }
 
-.species-card {
-  overflow: hidden;
-  padding: 16px;
-  background: var(--bg-muted, #fff);
-  box-shadow: var(--shadow-sm);
-  transition: transform .22s, box-shadow .22s, border-color .22s;
-}
 
 .species-card:focus-within {
   outline: 2px solid #c36922;
   outline-offset: 2px;
 }
+
+.species-card {
+  overflow: hidden;
+  padding: 16px;
+  background: var(--bg-muted, #fff);
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 12px;
+  box-shadow: var(--shadow-sm);
+  transition:
+    transform 0.22s ease,
+    box-shadow 0.22s ease,
+    border-color 0.22s ease;
+}
+
+.species-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md, 0 6px 16px rgba(0, 0, 0, 0.1));
+  border-color: var(--earth-400, #C36922);
+}
+
 
 .species-label {
   display: block;
