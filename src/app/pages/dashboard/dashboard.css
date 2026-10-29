@@ -469,6 +469,7 @@
   border-radius: 30px;
   padding: 6px 10px 6px 14px;
   transition: border-color .2s, background .2s;
+  position: relative;
 }
 
 .year-selector:focus-within {
@@ -489,9 +490,15 @@
   cursor: pointer;
   outline: none;
   padding: 0 2px;
+  width: 100%;
+  padding-right: 32px;
 }
 
 .year-selector__caret {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
   font-size: 18px;
   color: var(--text-400);
   pointer-events: none;
